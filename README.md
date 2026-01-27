@@ -77,14 +77,15 @@ moxie-bot/
 ## 🚀 Getting Started
 
 ### 1️⃣ Install dependencies
-
+```text
 npm install
-
+```
 ---
 
 ### 2️⃣ Configure environment variables
-
+```text
 cp .env.example .env
+```
 
 Fill in the following values:
 
@@ -95,14 +96,16 @@ Fill in the following values:
 ---
 
 ### 3️⃣ Deploy slash commands
-
+```text
 npm run deploy
+```
 
 ---
 
 ### 4️⃣ Start the bot (development mode)
-
+```text
 npm run dev
+```
 
 If successful, you should see:
 
@@ -128,7 +131,7 @@ Moxie uses Discord’s built-in permission system and will later support:
 
 ## 🗺️ Roadmap
 
-See ROADMAP.md for detailed milestones and planned features.
+See [ROADMAP.md](https://github.com/McGeeLabs/moxie-bot/blob/main/ROADMAP.md) for detailed milestones and planned features.
 
 ---
 
@@ -145,4 +148,4 @@ Moxie is designed to be:
 
 ## 📄 License
 
-MIT
+[MIT](https://github.com/McGeeLabs/moxie-bot/blob/main/LICENSE)
