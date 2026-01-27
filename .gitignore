@@ -1,0 +1,61 @@
+# ======================
+# Node / npm
+# ======================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ======================
+# Build output
+# ======================
+dist/
+build/
+.out/
+.next/
+coverage/
+
+# ======================
+# Environment / secrets
+# ======================
+.env
+.env.*
+!.env.example
+
+# ======================
+# OS / editor junk
+# ======================
+.DS_Store
+Thumbs.db
+
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+
+.idea/
+*.swp
+
+# ======================
+# Logs
+# ======================
+logs/
+*.log
+
+# ======================
+# TypeScript
+# ======================
+*.tsbuildinfo
+
+# ======================
+# Prisma (if/when you add it)
+# ======================
+prisma/dev.db
+prisma/*.db
+prisma/*.db-journal
+
+# ======================
+# Docker
+# ======================
+.docker/
+docker-data/
