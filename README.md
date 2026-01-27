@@ -1,9 +1,11 @@
+
+# Moxie 🤖
+
+![Version](https://img.shields.io/badge/version-v0.1.0-blue)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen)
 ![TypeScript](https://img.shields.io/badge/typescript-blue)
 ![Discord.js](https://img.shields.io/badge/discord.js-v14-blueviolet)
 ![License](https://img.shields.io/github/license/McGeeLabs/moxie-bot)
-
-# Moxie 🤖
 
 **Moxie** is a modular, self-hosted Discord bot built with **TypeScript**, **Discord.js**, and **PostgreSQL**.
 
@@ -25,6 +27,16 @@ The goal of Moxie is to provide a powerful, extensible alternative to bots like 
 
 ---
 
+## Why Moxie?
+
+Moxie is built to be a **self-hosted, modular alternative** to all-in-one Discord bots like MEE6 — with **full control** over features, data, and customization.
+
+- **Own your data** (PostgreSQL-backed, no vendor lock-in)
+- **Modular by design** (enable features per guild)
+- **Built for growth** (clean architecture + future dashboard + automation/MCP hooks)
+
+---
+
 ## 🧱 Tech Stack
 
 - **Node.js**
@@ -39,19 +51,26 @@ The goal of Moxie is to provide a powerful, extensible alternative to bots like 
 
 ## 📂 Project Structure
 
+```text
 moxie-bot/
 ├── src/
-│   ├── commands/          # Slash commands
-│   ├── events/            # Discord event handlers
-│   ├── types.ts           # Shared bot typings
-│   ├── config.ts          # Environment configuration
-│   ├── deploy-commands.ts # Slash command registration
-│   └── index.ts           # Bot entry point
-├── .env.example
+│   ├── commands/              # Slash command implementations
+│   │   └── ping.ts
+│   ├── events/                # Discord event handlers
+│   │   ├── interactionCreate.ts
+│   │   └── ready.ts
+│   ├── types.ts               # Shared bot typings
+│   ├── config.ts              # Environment configuration
+│   ├── deploy-commands.ts     # Slash command registration
+│   └── index.ts               # Bot entry point
+├── .env.example               # Environment variable template
 ├── .gitignore
+├── LICENSE
 ├── package.json
+├── package-lock.json
 ├── tsconfig.json
-└── README.md
+├── README.md
+└── ROADMAP.md
 
 ---
 

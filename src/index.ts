@@ -5,6 +5,8 @@ import type { Event, MoxieClient } from "./types";
 import * as ready from "./events/ready";
 import * as interactionCreate from "./events/interactionCreate";
 import * as ping from "./commands/ping";
+import * as about from "./commands/about";
+
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
@@ -12,6 +14,7 @@ const client = new Client({
 
 client.commands = new Collection();
 client.commands.set(ping.data.name, ping);
+client.commands.set(about.data.name, about);
 
 const events: Event[] = [ready, interactionCreate];
 
