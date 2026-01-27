@@ -1,0 +1,47 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement", "idea"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea to improve Moxie? We'd love to hear it!
+        Please describe your idea clearly and concisely.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this solve?
+      placeholder: "Moderators need an easier way to manage reaction roles"
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How should this feature work?
+      placeholder: "Add a slash command to create reaction roles"
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any alternative solutions?
+      placeholder: "Manual role assignment, other bots"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: philosophy
+    attributes:
+      label: Project Alignment
+      options:
+        - label: This feature aligns with Moxie's open-source, self-hosted philosophy
+          required: true

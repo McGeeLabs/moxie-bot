@@ -1,0 +1,28 @@
+name: ❓ Question / Help
+description: Ask a question about setup or usage
+title: "[Question]: "
+labels: ["question"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Need help getting started or understanding how something works?
+        Please include as much context as possible.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      placeholder: "How do I deploy commands globally?"
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: "Node 18, Windows / Linux / Docker"
+    validations:
+      required: false

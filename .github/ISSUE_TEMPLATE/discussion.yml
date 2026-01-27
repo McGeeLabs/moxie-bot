@@ -1,0 +1,22 @@
+name: 💡 Idea / Discussion
+description: Start a broader discussion or brainstorm ideas
+title: "[Idea]: "
+labels: ["idea", "needs discussion"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is for ideas that need discussion before implementation.
+
+        👉 For open-ended discussion, you may also want to use **GitHub Discussions**:
+        https://github.com/McGeeLabs/moxie-bot/discussions
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: Idea
+      placeholder: "What if Moxie supported plugin loading?"
+    validations:
+      required: true
