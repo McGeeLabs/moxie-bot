@@ -71,7 +71,7 @@ moxie-bot/
 ├── tsconfig.json
 ├── README.md
 └── ROADMAP.md
-
+```
 ---
 
 ## 🚀 Getting Started
