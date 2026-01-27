@@ -2,7 +2,7 @@ import { SlashCommandBuilder, type ChatInputCommandInteraction } from "discord.j
 
 export const data = new SlashCommandBuilder()
   .setName("about")
-  .setDescription("About Moxie (version, uptime, latency)");
+  .setDescription("About Moxie (version, uptime, support)");
 
 function formatUptime(seconds: number): string {
   const d = Math.floor(seconds / 86400); seconds %= 86400;
@@ -18,23 +18,27 @@ function formatUptime(seconds: number): string {
 }
 
 export async function execute(interaction: ChatInputCommandInteraction) {
-  const version = process.env.npm_package_version ?? "0.0.0";
+  const version = process.env.npm_package_version ?? "0.1.0";
   const uptime = formatUptime(Math.floor(process.uptime()));
+  const wsPing = Math.round(interaction.client.ws.ping);
 
-  // Quick & simple latency estimate (API round-trip)
   const t0 = Date.now();
   await interaction.reply({ content: "Gathering info… 🛰️" });
   const apiMs = Date.now() - t0;
 
-  const wsPing = Math.round(interaction.client.ws.ping);
-
   await interaction.editReply(
     [
       "**Moxie** 🤖",
+      "",
       `• Version: \`v${version}\``,
       `• Uptime: \`${uptime}\``,
       `• API Latency: \`~${apiMs}ms\``,
       `• WS Ping: \`${wsPing}ms\``,
+      "",
+      "💖 **Support the project**",
+      "Moxie is 100% open source and free to self-host.",
+      "If you find it useful:",
+      "👉 https://github.com/sponsors/McGeeLabs",
     ].join("\n")
   );
 }
