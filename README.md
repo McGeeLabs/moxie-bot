@@ -6,6 +6,7 @@
 ![TypeScript](https://img.shields.io/badge/typescript-blue)
 ![Discord.js](https://img.shields.io/badge/discord.js-v14-blueviolet)
 ![License](https://img.shields.io/github/license/McGeeLabs/moxie-bot)
+[![Sponsor](https://img.shields.io/badge/sponsor-%E2%9D%A4-red)](https://github.com/sponsors/McGeeLabs)
 
 **Moxie** is a modular, self-hosted Discord bot built with **TypeScript**, **Discord.js**, and **PostgreSQL**.
 
@@ -77,13 +78,13 @@ moxie-bot/
 ## 🚀 Getting Started
 
 ### 1️⃣ Install dependencies
-```text
+```bash
 npm install
 ```
 ---
 
 ### 2️⃣ Configure environment variables
-```text
+```bash
 cp .env.example .env
 ```
 
@@ -96,14 +97,14 @@ Fill in the following values:
 ---
 
 ### 3️⃣ Deploy slash commands
-```text
+```bash
 npm run deploy
 ```
 
 ---
 
 ### 4️⃣ Start the bot (development mode)
-```text
+```bash
 npm run dev
 ```
 
@@ -143,6 +144,22 @@ Moxie is designed to be:
 - **Modular** — features enabled per guild
 - **Multi-guild** — built-in from day one
 - **Extensible** — clean architecture for future growth
+
+---
+
+## 💖 Supporting Moxie
+
+Moxie is **100% open source** and free to self-host.
+
+If you find Moxie useful and want to support its continued development, you can:
+
+- ⭐ Star the repository
+- 🐛 Report bugs or contribute code
+- 💖 Sponsor the project on GitHub
+
+👉 **GitHub Sponsors:** https://github.com/sponsors/McGeeLabs
+
+There are **no paid features** and **nothing locked behind a paywall** — support is completely optional and deeply appreciated.
 
 ---
 
