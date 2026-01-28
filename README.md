@@ -1,12 +1,32 @@
 
-# Moxie 🤖
+<div align="center">
 
-![Version](https://img.shields.io/badge/version-v0.1.0-blue)
-![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen)
-![TypeScript](https://img.shields.io/badge/typescript-blue)
-![Discord.js](https://img.shields.io/badge/discord.js-v14-blueviolet)
-![License](https://img.shields.io/github/license/McGeeLabs/moxie-bot)
-[![Sponsor](https://img.shields.io/badge/sponsor-%E2%9D%A4-red)](https://github.com/sponsors/McGeeLabs)
+<!-- Logo -->
+<picture>
+  <!-- Dark mode -->
+  <source media="(prefers-color-scheme: dark)" srcset="./branding/moxie-mark-dark.png">
+  <!-- Light mode -->
+  <img alt="Moxie" src="./branding/moxie-mark-light.png" width="96" height="96">
+</picture>
+
+<h1>Moxie</h1>
+
+<p>
+  <strong>Calm. Reliable. Alive.</strong><br/>
+  Disciplined tooling for automation and operations.
+</p>
+
+<!-- Badges -->
+<p align="center">
+  <img src="https://img.shields.io/badge/version-v0.1.0-2563EB?style=for-the-badge&labelColor=0F172A" />
+  <img src="https://img.shields.io/badge/node-%3E%3D18-22C55E?style=for-the-badge&labelColor=0F172A" />
+  <img src="https://img.shields.io/badge/typescript-2563EB?style=for-the-badge&labelColor=0F172A" />
+  <img src="https://img.shields.io/badge/discord.js-v14-2563EB?style=for-the-badge&labelColor=0F172A" />
+  <img src="https://img.shields.io/github/license/McGeeLabs/moxie-bot?style=for-the-badge&labelColor=0F172A&color=2563EB" />
+  <a href="https://github.com/sponsors/McGeeLabs">
+    <img src="https://img.shields.io/badge/sponsor-GitHub-2563EB?style=for-the-badge&labelColor=0F172A" />
+  </a>
+</p>
 
 **Moxie** is a modular, self-hosted Discord bot built with **TypeScript**, **Discord.js**, and **PostgreSQL**.
 
