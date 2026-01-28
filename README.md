@@ -21,6 +21,7 @@
   <img src="https://img.shields.io/badge/version-v0.1.0-2563EB?style=flat-square&labelColor=0F172A" />
   <img src="https://img.shields.io/badge/node-%3E%3D18-22C55E?style=flat-square&labelColor=0F172A" />
   <img src="https://img.shields.io/github/license/McGeeLabs/moxie-bot?style=flat-square&labelColor=0F172A&color=2563EB" />
+  <img src="https://img.shields.io/github/actions/workflow/status/McGeeLabs/moxie-bot/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0F172A&color=22C55E" />
   <a href="https://github.com/sponsors/McGeeLabs">
     <img src="https://img.shields.io/badge/sponsor-GitHub-2563EB?style=flat-square&labelColor=0F172A" />
   </a>
