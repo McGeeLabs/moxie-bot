@@ -4,9 +4,9 @@
 <!-- Logo -->
 <picture>
   <!-- Dark mode -->
-  <source media="(prefers-color-scheme: dark)" srcset="./branding/moxie-repo-banner.png">
+  <source media="(prefers-color-scheme: dark)" srcset="./branding/moxie-mark-dark.png">
   <!-- Light mode -->
-  <img alt="Moxie" src="./branding/moxie-repo-banner.png">
+  <img alt="Moxie" src="./branding/moxie-mark-light.png">
 </picture>
 
 <h1>Moxie</h1>
@@ -18,13 +18,13 @@
 
 <!-- Badges -->
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v0.1.0-2563EB?style=for-the-badge&labelColor=0F172A" />
-  <img src="https://img.shields.io/badge/node-%3E%3D18-22C55E?style=for-the-badge&labelColor=0F172A" />
-  <img src="https://img.shields.io/badge/typescript-2563EB?style=for-the-badge&labelColor=0F172A" />
-  <img src="https://img.shields.io/badge/discord.js-v14-2563EB?style=for-the-badge&labelColor=0F172A" />
-  <img src="https://img.shields.io/github/license/McGeeLabs/moxie-bot?style=for-the-badge&labelColor=0F172A&color=2563EB" />
+  <img src="https://img.shields.io/badge/version-v0.1.0-2563EB?style=flat-square&labelColor=0F172A" />
+  <img src="https://img.shields.io/badge/node-%3E%3D18-22C55E?style=flat-square&labelColor=0F172A" />
+  <img src="https://img.shields.io/badge/typescript-2563EB?style=flat-square&labelColor=0F172A" />
+  <img src="https://img.shields.io/badge/discord.js-v14-2563EB?style=flat-square&labelColor=0F172A" />
+  <img src="https://img.shields.io/github/license/McGeeLabs/moxie-bot?style=flat-square&labelColor=0F172A&color=2563EB" />
   <a href="https://github.com/sponsors/McGeeLabs">
-    <img src="https://img.shields.io/badge/sponsor-GitHub-2563EB?style=for-the-badge&labelColor=0F172A" />
+    <img src="https://img.shields.io/badge/sponsor-GitHub-2563EB?style=flat-square&labelColor=0F172A" />
   </a>
 </p>
 
