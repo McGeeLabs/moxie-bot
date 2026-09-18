@@ -3,19 +3,24 @@ import type {
   Client,
   Collection,
   SlashCommandBuilder,
+  SlashCommandSubcommandsOnlyBuilder,
 } from "discord.js";
+import type { WebhookService } from "./integrations/webhooks/service";
 
 export type Command = {
-  data: SlashCommandBuilder;
+  module?: string;
+  data: SlashCommandBuilder | SlashCommandSubcommandsOnlyBuilder;
   execute: (interaction: ChatInputCommandInteraction) => Promise<void>;
 };
 
-export type Event = {
+export type BotModule = {
   name: string;
-  once?: boolean;
-  execute: (...args: any[]) => Promise<void> | void;
+  required: boolean;
+  defaultEnabled: boolean;
+  commands: readonly Command[];
 };
 
 export type MoxieClient = Client & {
+  webhooks: WebhookService;
   commands: Collection<string, Command>;
 };

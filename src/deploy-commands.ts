@@ -1,20 +1,19 @@
 import { REST, Routes } from "discord.js";
-import { CONFIG } from "./config";
-import * as ping from "./commands/ping";
-import * as about from "./commands/about";
-
-
-const commands = [ping.data.toJSON(), about.data.toJSON()];
+import { readDeploymentConfig } from "./core/config";
+import { logger } from "./core/logger";
+import { commands } from "./modules";
 
 async function main() {
-  const rest = new REST({ version: "10" }).setToken(CONFIG.token);
-
-  console.log("📡 Deploying guild commands…");
-  await rest.put(
-    Routes.applicationGuildCommands(CONFIG.clientId, CONFIG.guildId),
-    { body: commands }
-  );
-  console.log("✅ Commands deployed.");
+  const config = readDeploymentConfig();
+  const rest = new REST({ version: "10" }).setToken(config.token);
+  logger.info("Deploying guild commands", { guildId: config.guildId, count: commands.length });
+  await rest.put(Routes.applicationGuildCommands(config.clientId, config.guildId), {
+    body: commands.map(command => command.data.toJSON()),
+  });
+  logger.info("Commands deployed", { guildId: config.guildId });
 }
 
-main().catch(console.error);
+void main().catch(error => {
+  logger.error("Command deployment failed", error);
+  process.exitCode = 1;
+});

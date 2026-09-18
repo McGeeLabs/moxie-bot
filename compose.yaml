@@ -1,0 +1,44 @@
+# Existing PostgreSQL container. Always pass --env-file .env.docker.
+services:
+  bot:
+    image: moxie-bot:local
+    build:
+      context: .
+      target: runtime
+    environment:
+      DISCORD_TOKEN: ${DISCORD_TOKEN:?Set DISCORD_TOKEN in .env.docker}
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID:-}
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:-}
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env.docker}
+      WEBHOOK_ENABLED: ${WEBHOOK_ENABLED:-false}
+      WEBHOOK_HOST: 0.0.0.0
+      WEBHOOK_PORT: "3000"
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    networks:
+      - default
+      - database
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  migrate:
+    image: moxie-bot-migrations:local
+    build:
+      context: .
+      target: migrations
+    profiles: [tools]
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env.docker}
+    init: true
+    restart: "no"
+    networks:
+      - database
+
+networks:
+  database:
+    external: true
+    name: ${MOXIE_DB_NETWORK:?Set MOXIE_DB_NETWORK to the existing PostgreSQL Docker network}

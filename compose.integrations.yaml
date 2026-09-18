@@ -1,0 +1,12 @@
+# Private container-to-container notifications; combine with compose.yaml.
+services:
+  bot:
+    networks:
+      integrations:
+        aliases:
+          - moxie-bot
+
+networks:
+  integrations:
+    external: true
+    name: ${MOXIE_INTEGRATION_NETWORK:-mcgee_proxy}

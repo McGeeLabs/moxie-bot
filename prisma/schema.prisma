@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client"
+  output = "../src/generated/prisma"
+  moduleFormat = "cjs"
+  generatedFileExtension = "ts"
+  importFileExtension = ""
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Guild {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  modules   GuildModuleConfig[]
+  webhooks  WebhookRoute[]
+}
+
+model WebhookRoute {
+  id         String   @id @default(uuid())
+  guildId    String
+  name       String
+  channelId  String
+  secretHash String
+  provider   WebhookProvider @default(generic)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  guild      Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@unique([guildId, name])
+}
+
+enum WebhookProvider {
+  generic
+  uptimeKuma
+}
+
+model GuildModuleConfig {
+  guildId   String
+  module    String
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  guild     Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@id([guildId, module])
+}

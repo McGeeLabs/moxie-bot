@@ -7,8 +7,11 @@ on:
 
 jobs:
   build:
-    name: Build (Node 18)
+    name: Build and test (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [22, 24]
 
     steps:
       - name: Checkout
@@ -17,11 +20,54 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: ${{ matrix.node }}
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
+      - name: Build and test
+        run: npm test
+
+  docker:
+    name: Validate Compose and build Linux images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Compose files without credentials
+        env:
+          DISCORD_TOKEN: ci-placeholder
+          DATABASE_URL: postgresql://ci:ci@postgres:5432/ci
+          MOXIE_DB_NETWORK: ci-placeholder
+          POSTGRES_PASSWORD: ci-placeholder
+        run: |
+          docker compose --profile tools config --quiet
+          docker compose -f compose.standalone.yaml --profile tools config --quiet
+          docker compose -f compose.yaml -f compose.webhooks.yaml --profile tools config --quiet
+          docker compose -f compose.yaml -f compose.integrations.yaml --profile tools config --quiet
+          docker compose -f compose.standalone.yaml -f compose.webhooks.yaml --profile tools config --quiet
+
+      - name: Build runtime image
+        run: docker build --target runtime --tag moxie-bot:ci .
+
+      - name: Build migration image
+        run: docker build --target migrations --tag moxie-bot-migrations:ci .
+
+      - name: Smoke-test runtime without Discord or a database
+        run: |
+          docker run --rm --entrypoint node moxie-bot:ci -e 'if (process.getuid() === 0) process.exit(1); for (const name of ["prisma", "typescript"]) { try { require.resolve(name); process.exit(1); } catch (error) { if (error.code !== "MODULE_NOT_FOUND") throw error; } } require("./dist/core/client").createClient().destroy(); require("./dist/generated/prisma/client"); console.log("Non-root runtime, production dependencies, and generated client verified");'
+          set +e
+          output="$(docker run --rm -e DISCORD_TOKEN= moxie-bot:ci 2>&1)"
+          status="$?"
+          set -e
+          printf '%s\n' "$output"
+          test "$status" -eq 1
+          case "$output" in
+            *"Missing env var: DISCORD_TOKEN"*) ;;
+            *) exit 1 ;;
+          esac
+
+      - name: Smoke-test Prisma CLI
+        run: docker run --rm moxie-bot-migrations:ci validate

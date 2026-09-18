@@ -23,7 +23,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   const wsPing = Math.round(interaction.client.ws.ping);
 
   const t0 = Date.now();
-  await interaction.reply({ content: "Gathering info… 🛰️" });
+  if (interaction.deferred) await interaction.editReply({ content: "Gathering info… 🛰️" });
+  else await interaction.reply({ content: "Gathering info… 🛰️" });
   const apiMs = Date.now() - t0;
 
   await interaction.editReply(

@@ -1,26 +1,51 @@
-import { Client, Collection, GatewayIntentBits } from "discord.js";
-import { CONFIG } from "./config";
-import type { Event, MoxieClient } from "./types";
+import { createClient } from "./core/client";
+import { readRuntimeConfig, readWebhookConfig } from "./core/config";
+import { logger } from "./core/logger";
+import { checkDatabase, disconnectDatabase } from "./core/database";
+import { startWebhookListener, stopWebhookListener } from "./integrations/webhooks/server";
 
-import * as ready from "./events/ready";
-import * as interactionCreate from "./events/interactionCreate";
-import * as ping from "./commands/ping";
-import * as about from "./commands/about";
+let stopping = false;
+const client = createClient();
 
-
-const client = new Client({
-  intents: [GatewayIntentBits.Guilds],
-}) as MoxieClient;
-
-client.commands = new Collection();
-client.commands.set(ping.data.name, ping);
-client.commands.set(about.data.name, about);
-
-const events: Event[] = [ready, interactionCreate];
-
-for (const evt of events) {
-  if (evt.once) client.once(evt.name, (...args) => evt.execute(...args));
-  else client.on(evt.name, (...args) => evt.execute(...args));
+async function shutdown(reason: string, exitCode = 0) {
+  if (stopping) return;
+  stopping = true;
+  process.exitCode = exitCode;
+  logger.info("Stopping Moxie", { reason });
+  try {
+    await stopWebhookListener();
+  } catch {
+    logger.warn("Webhook listener shutdown failed");
+    process.exitCode = 1;
+  }
+  try {
+    await client.destroy();
+  } catch (error) {
+    logger.error("Shutdown failed", error);
+    process.exitCode = 1;
+  }
+  try {
+    await disconnectDatabase();
+  } catch {
+    logger.warn("Database disconnect failed");
+    process.exitCode = 1;
+  }
 }
 
-client.login(CONFIG.token);
+process.once("SIGINT", () => { void shutdown("SIGINT"); });
+process.once("SIGTERM", () => { void shutdown("SIGTERM"); });
+
+async function main() {
+  const config = readRuntimeConfig();
+  const webhooks = readWebhookConfig();
+  const health = await checkDatabase();
+  logger.info("Database startup check", { status: health.status });
+  if (stopping) return;
+  await client.login(config.token);
+  if (!stopping) await startWebhookListener(webhooks, client.webhooks);
+}
+
+void main().catch(async error => {
+  logger.error("Moxie startup failed", error);
+  await shutdown("startup failure", 1);
+});

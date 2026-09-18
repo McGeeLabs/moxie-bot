@@ -1,0 +1,6 @@
+# Optional override for a reverse proxy on the Docker host.
+# Merge with either main Compose file. Publish only on host loopback.
+services:
+  bot:
+    ports:
+      - "127.0.0.1:${WEBHOOK_PORT:-3000}:3000"
