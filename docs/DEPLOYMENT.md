@@ -4,7 +4,7 @@ Moxie can run on a Linux VPS using Docker Engine and the Docker Compose plugin.
 Docker Desktop with Linux containers can use the same files on Windows.
 The VPS needs outbound access to Discord; the base configurations open no inbound bot or database ports. The optional webhook override publishes a host-loopback port only; see [webhook setup](WEBHOOKS.md).
 
-Both files passed validation with the official Compose CLI. Production-only dependency imports and missing-token startup were also verified in an isolated Windows copy. Actual Linux image builds and container smoke tests are configured in GitHub Actions; they have not been run locally because the development workspace has no Docker engine. No VPS deployment has been performed.
+Both files passed validation with the official Compose CLI. Production-only dependency imports and missing-token startup were also verified in an isolated Windows copy. Actual Linux image builds and container smoke tests are configured in GitHub Actions; they have not been run locally because the development workspace has no Docker engine. The user confirmed Moxie is deployed and working on forge01. Private Docker-network Kuma test delivery is also confirmed. Detailed container smoke checks remain to be confirmed.
 
 ## Choose a setup
 

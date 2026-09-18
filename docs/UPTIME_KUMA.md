@@ -32,6 +32,14 @@ In **Settings → Notifications → Setup Notification**, choose **Webhook**:
 
 Use **Test** after connectivity is established, save the notification, and enable it on the relevant monitors. A successful request returns `{"status":"delivered"}`. Kuma tests and notifications without heartbeat data show as general notifications. Status events include the monitor name, status, optional latency/time, and a bounded description.
 
+## Notification appearance
+
+Kuma notifications now use Discord embeds: green for UP, red for DOWN, amber for PENDING, purple for MAINTENANCE, and blue for general/test notifications. Cards have a short title, description, monitor/status fields, optional latency/reported UTC time, and a footer identifying Moxie, Kuma, and the saved route name. No database migration or command redeployment is required for this presentation change. Existing messages keep their old appearance; new messages use cards after the bot image is rebuilt.
+
+Moxie needs **Embed Links**, as well as View Channel and Send Messages, in the notification channel. Missing Embed Links is reported as HTTP 403 before sending. Generic webhook routes continue to send plain text with automatic link embeds suppressed. The external webhook API does not accept arbitrary embeds; Kuma cards are constructed by the adapter from validated fields.
+
+Direct Kuma test delivery over forge01's Docker network is confirmed by the user. The new card formatting is covered by local tests; live card delivery after deployment remains to be verified.
+
 ## forge01 to a Windows development bot
 
 Your current PostgreSQL tunnel forwards traffic from Windows to forge01. It does not allow Kuma on forge01 to reach the Windows webhook listener. Keep Moxie's listener on `127.0.0.1`; setting Kuma's URL to `localhost:3000` would target Kuma's container, not your PC.

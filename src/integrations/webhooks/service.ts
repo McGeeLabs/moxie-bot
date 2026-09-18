@@ -1,4 +1,5 @@
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
+import type { APIEmbed } from "discord.js";
 import type { PrismaClient } from "../../generated/prisma/client";
 import { getDatabase } from "../../core/database";
 import { guildConfiguration, type GuildConfiguration } from "../../core/database/guildConfiguration";
@@ -8,11 +9,11 @@ import { webhookProviders, type WebhookProvider } from "./providers";
 import { formatUptimeKumaEvent } from "../uptimeKuma/formatter";
 export { WebhookError } from "./errors";
 
-export type WebhookEvent = { content: string };
+export type WebhookEvent = { content: string; embed?: APIEmbed };
 export type RouteSummary = { id: string; name: string; channelId: string; provider: WebhookProvider };
 export interface WebhookDelivery {
   validateDestination(guildId: string, channelId: string): Promise<void>;
-  send(guildId: string, channelId: string, content: string): Promise<void>;
+  send(guildId: string, channelId: string, content: string, embed?: APIEmbed): Promise<void>;
 }
 
 type WebhookDatabase = Pick<PrismaClient, "webhookRoute">;
@@ -101,7 +102,7 @@ export class WebhookService {
     if (route.provider === "uptimeKuma" && !await this.configuration.isEnabled(route.guildId, "uptimeKuma")) {
       throw new WebhookError(403, "Uptime Kuma is disabled in this server");
     }
-    const validated = route.provider === "uptimeKuma" ? formatUptimeKumaEvent(event) : validateEvent(event);
+    const validated: WebhookEvent = route.provider === "uptimeKuma" ? formatUptimeKumaEvent(event) : validateEvent(event);
     const timestamp = this.now();
     for (const [id, window] of this.windows) if (window.expires <= timestamp) this.windows.delete(id);
     let window = this.windows.get(routeId);
@@ -111,7 +112,14 @@ export class WebhookService {
       this.windows.set(routeId, window);
     }
     if (++window.count > 60) throw new WebhookError(429, "Webhook rate limit exceeded; retry after 60 seconds");
-    await this.delivery.send(route.guildId, route.channelId, `[${route.name}] ${validated.content}`);
+    const content = `[${route.name}] ${validated.content}`;
+    if (validated.embed) {
+      await this.delivery.send(route.guildId, route.channelId, content, {
+        ...validated.embed, footer: { text: `Moxie • Uptime Kuma • ${route.name}` },
+      });
+    } else {
+      await this.delivery.send(route.guildId, route.channelId, content);
+    }
     logger.info("Webhook notification delivered", { routeId, guildId: route.guildId, channelId: route.channelId, provider: route.provider });
   }
 }

@@ -457,7 +457,7 @@ Enable the optional local listener with `WEBHOOK_ENABLED=true` in `.env`, then e
 
 ### Uptime Kuma
 
-Live test delivery from Kuma 1.23.17 on forge01 to the Windows development bot and Discord is confirmed. A real DOWN alert for the Automation monitor is also confirmed; UP recovery remains to be verified.
+Live test delivery from Kuma 1.23.17 is confirmed both through the Windows development bot and directly over forge01 Docker networking. A real DOWN alert is also confirmed; UP recovery remains to be verified. Kuma notifications now use status-colored Discord cards with monitor details and optional latency/time. Rebuild the VPS image to enable this formatting; Moxie needs Embed Links in the destination channel.
 
 Native Uptime Kuma JSON webhook notifications are supported through a dedicated route provider and disabled-by-default `uptimeKuma` module. Create a route with `/moxie webhook create name:kuma channel:#monitoring provider:Uptime Kuma`, then enable both `webhooks` and `uptimeKuma` for the guild. Existing generic routes keep their original format. Follow the [Uptime Kuma setup guide](docs/UPTIME_KUMA.md), including connectivity from forge01 to your local Windows bot.
 
@@ -563,7 +563,7 @@ Docker deployment files are prepared for Linux/VPS hosting and Docker Desktop wi
 * `compose.standalone.yaml`: a fresh installation with PostgreSQL 17 and a persistent volume.
 * `.env.docker.example`: a separate Docker-host environment template, keeping the local SSH-tunnel `.env` independent.
 
-Both Compose files have passed validation with placeholder credentials. GitHub Actions is configured to build and smoke-test the Linux images. Local container builds and VPS deployment are still unverified because Docker is not installed in the development workspace.
+Both Compose files have passed validation with placeholder credentials. GitHub Actions is configured to build and smoke-test the Linux images. The user confirmed Moxie is running and working on forge01. Local container builds remain unavailable because Docker is not installed in the Windows workspace. Direct Kuma delivery over Docker networking is confirmed; detailed restart/shutdown checks remain to be confirmed.
 
 Start with the [Docker deployment guide](docs/DEPLOYMENT.md). It covers your `mcgee-postgres` network, environment setup, explicit migrations, database verification, startup, updates, and shutdown. An optional `compose.webhooks.yaml` override publishes the webhook listener only on host loopback; see [webhook deployment](docs/WEBHOOKS.md). Use the container hostname on the VPS rather than `127.0.0.1:5433`.
 

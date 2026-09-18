@@ -39,9 +39,10 @@ The roadmap is intentionally flexible and may evolve as features are implemented
 - [x] Configure Linux image-build and runtime/tooling smoke checks in CI
 - [x] Document existing-database and fresh-install workflows in `docs/DEPLOYMENT.md`
 - [x] Prepare forge01 migration guide and private shared-network Compose override for Kuma
-- [ ] Run image builds and container smoke checks on a Docker host (no local Docker engine)
+- [x] User completed VPS deployment and confirmed the bot works on forge01
+- [ ] Complete detailed Linux container smoke checks
 - [ ] Verify database connectivity, Discord commands, saved guild settings, and shutdown in containers
-- [ ] Deploy to VPS when requested
+- [x] Deploy to forge01 (user confirmed running and working)
 
 ### Milestone 4 — Generic webhook integration
 
@@ -80,16 +81,19 @@ The roadmap is intentionally flexible and may evolve as features are implemented
 - [x] User verified Kuma 1.23.17 test notification in Discord via relay/reverse tunnel after narrow UFW rule
 - [x] User verified an actual Automation monitor DOWN alert after a deliberate invalid-hostname change
 - [ ] Verify monitor UP recovery in Discord
-- [ ] Verify private container-to-container delivery after VPS deployment
+- [x] User confirmed private Kuma test delivery over Docker networking after VPS deployment
+- [x] Implement status-colored Discord embeds with bounded fields, route footer, and Embed Links permission checks
+- [x] 40 automated tests pass, including actual embed send options, missing Embed Links, mention suppression, and generic text delivery
+- [ ] Verify new card formatting live after rebuilding the VPS image
 
 ### Next milestones, in priority order
 
 1. Verify enabled `/about`, `/ping`, and saved settings across a bot restart in Discord. Module listing and disable/re-enable controls are verified live. Guild sync, persistent toggles, admin controls, PostgreSQL/Prisma, and database health are implemented.
-2. Run the prepared Docker image builds and smoke checks on a Docker host. Compose files and Linux/VPS deployment documentation are implemented; local Compose validation passed.
+2. Complete container smoke checks and restart/shutdown verification. The user confirmed Moxie is deployed and working on forge01.
 3. Verify webhooks in containers. Generic webhook delivery is confirmed live in Discord; the native Kuma adapter passes automated and PostgreSQL/HTTP checks.
 4. Complete live Uptime Kuma verification, then begin Valheim monitoring with per-guild settings and notification destinations.
 
-These priorities come before the later community features listed below. PostgreSQL, guild configuration, generic webhooks, and the native Kuma push adapter are implemented. Generic webhook delivery and a native Kuma test notification are confirmed live in Discord. A real Kuma DOWN alert is also confirmed. Kuma UP recovery, container runtime checks, VPS deployment, and Valheim monitoring remain pending.
+These priorities come before the later community features listed below. PostgreSQL, guild configuration, generic webhooks, and the native Kuma push adapter are implemented. Generic webhook delivery and a native Kuma test notification are confirmed live in Discord. A real Kuma DOWN alert is also confirmed. VPS deployment is confirmed by the user. Direct Kuma test delivery over Docker networking is confirmed. New card formatting on the VPS, Kuma UP recovery, detailed container checks, and Valheim monitoring remain pending.
 
 **⚠️ Stability Notice**: Until Phase 1 is complete, breaking changes may occur (schema changes, command restructures, API modifications). For production deployments, wait until Phase 2 is stable. Check release notes when updating.
 

@@ -1,10 +1,10 @@
-import { ChannelType, MessageFlags, PermissionFlagsBits, type Client } from "discord.js";
+import { ChannelType, MessageFlags, PermissionFlagsBits, type Client, type APIEmbed } from "discord.js";
 import { WebhookError, type WebhookDelivery } from "./service";
 
 export class DiscordWebhookDelivery implements WebhookDelivery {
   constructor(private readonly client: Client) {}
 
-  private async destination(guildId: string, channelId: string) {
+  private async destination(guildId: string, channelId: string, needsEmbeds = false) {
     if (!this.client.isReady()) throw new WebhookError(503, "Discord is not ready; retry later");
     try {
       const guild = await this.client.guilds.fetch(guildId);
@@ -15,6 +15,9 @@ export class DiscordWebhookDelivery implements WebhookDelivery {
       const member = guild.members.me ?? await guild.members.fetchMe();
       if (!channel.permissionsFor(member)?.has([PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages])) {
         throw new WebhookError(403, "Moxie needs View Channel and Send Messages in the destination");
+      }
+      if (needsEmbeds && !channel.permissionsFor(member)?.has(PermissionFlagsBits.EmbedLinks)) {
+        throw new WebhookError(403, "Moxie needs Embed Links in the destination for Uptime Kuma notifications");
       }
       return channel;
     } catch (error) {
@@ -27,10 +30,13 @@ export class DiscordWebhookDelivery implements WebhookDelivery {
     await this.destination(guildId, channelId);
   }
 
-  async send(guildId: string, channelId: string, content: string): Promise<void> {
-    const channel = await this.destination(guildId, channelId);
+  async send(guildId: string, channelId: string, content: string, embed?: APIEmbed): Promise<void> {
+    const channel = await this.destination(guildId, channelId, Boolean(embed));
     try {
-      await channel.send({ content, allowedMentions: { parse: [], repliedUser: false }, flags: MessageFlags.SuppressEmbeds });
+      await channel.send({
+        ...(embed ? { embeds: [embed] } : { content, flags: MessageFlags.SuppressEmbeds }),
+        allowedMentions: { parse: [], repliedUser: false },
+      });
     } catch {
       throw new WebhookError(502, "Discord delivery failed; retrying may duplicate a notification");
     }

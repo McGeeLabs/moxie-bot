@@ -80,7 +80,7 @@ moxie run --rm bot node dist/core/database/check.js
 moxie run --rm bot node dist/deploy-commands.js
 ```
 
-The first Linux build has not been verified yet; stop and resolve failures before proceeding. The migration command applies checked-in migrations. They are already applied to the current development database, so normally it reports none pending. Back up the database before applying any future pending schema changes. Never run `migrate dev` on the VPS. `database/check.js` should report connected; command deployment should report success.
+The user has confirmed a working forge01 deployment. On future builds, stop and resolve failures before proceeding. The migration command applies checked-in migrations. They are already applied to the current development database, so normally it reports none pending. Back up the database before applying any future pending schema changes. Never run `migrate dev` on the VPS. `database/check.js` should report connected; command deployment should report success.
 
 ## 5. Start Moxie and check Discord
 
@@ -123,6 +123,16 @@ sudo ufw delete allow in proto tcp from 172.18.0.4 to 172.18.0.1 port 3002
 Close the old reverse SSH tunnel and PostgreSQL tunnel on Windows with Ctrl+C if still open. Private same-network Kuma delivery does not need the host relay, public webhook port, or that UFW exception.
 
 ## Updates and shutdown
+
+For the notification-card update, commit and push the local source changes first. On forge01, enter the checkout and recreate the `moxie` helper from step 3 if using a new shell. Pull the same branch, rebuild the bot, and recreate it:
+
+```bash
+git pull --ff-only
+moxie build bot
+moxie up -d bot
+```
+
+No migration, token rotation, URL change, or command deployment is needed for this formatting update. Ensure the bot has Embed Links in the Discord destination, then use Kuma's Test button to verify a blue notification card.
 
 From the VPS checkout, recreate the `moxie` helper above. For updates:
 

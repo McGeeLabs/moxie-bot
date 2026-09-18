@@ -1,4 +1,5 @@
 import { WebhookError } from "../webhooks/errors";
+import type { APIEmbed } from "discord.js";
 
 function object(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -24,7 +25,7 @@ function details(value: string): string {
   return text(sanitized, 1000);
 }
 
-export function formatUptimeKumaEvent(value: unknown): { content: string } {
+export function formatUptimeKumaEvent(value: unknown): { content: string; embed: APIEmbed } {
   const invalid = () => new WebhookError(400, "Expected Uptime Kuma JSON with msg, monitor, and heartbeat; heartbeat status must be 0–3");
   if (!object(value) || Object.keys(value).some(key => !["msg", "monitor", "heartbeat"].includes(key)) ||
     typeof value.msg !== "string" || !value.msg.trim()) throw invalid();
@@ -32,7 +33,10 @@ export function formatUptimeKumaEvent(value: unknown): { content: string } {
   const heartbeat = value.heartbeat;
   if (monitor != null && !object(monitor)) throw invalid();
   if (heartbeat == null) {
-    return { content: `Uptime Kuma — Notification\n${details(value.msg)}`.slice(0, 1900) };
+    return {
+      content: `Uptime Kuma — Notification\n${details(value.msg)}`.slice(0, 1900),
+      embed: { title: "Uptime Kuma notification", description: details(value.msg), color: 0x3b82f6 },
+    };
   }
   if (!object(heartbeat) || !object(monitor) || typeof monitor.name !== "string" || !monitor.name.trim() ||
     typeof heartbeat.status !== "number" || !Number.isInteger(heartbeat.status) || heartbeat.status < 0 || heartbeat.status > 3) throw invalid();
@@ -46,5 +50,21 @@ export function formatUptimeKumaEvent(value: unknown): { content: string } {
   if (heartbeat.ping != null) lines.push(`Latency: ${heartbeat.ping}ms`);
   if (heartbeat.time) lines.push(`Reported time: ${text(heartbeat.time, 100)}`);
   lines.push(`Details: ${details(heartbeat.msg || value.msg)}`);
-  return { content: lines.join("\n").slice(0, 1900) };
+  const status = [
+    { title: "Service offline", label: "DOWN", color: 0xef4444 },
+    { title: "Service online", label: "UP", color: 0x22c55e },
+    { title: "Check pending", label: "PENDING", color: 0xf59e0b },
+    { title: "Maintenance", label: "MAINTENANCE", color: 0x8b5cf6 },
+  ][heartbeat.status];
+  const fields = [
+    { name: "Monitor", value: text(monitor.name, 160) || "Unnamed monitor", inline: true },
+    { name: "Status", value: status.label, inline: true },
+  ];
+  if (heartbeat.ping != null) fields.push({ name: "Latency", value: `${heartbeat.ping} ms`, inline: true });
+  const reportedTime = heartbeat.time ? text(heartbeat.time, 100) : "";
+  if (reportedTime) fields.push({ name: "Reported time (UTC)", value: reportedTime, inline: false });
+  return {
+    content: lines.join("\n").slice(0, 1900),
+    embed: { title: status.title, color: status.color, description: details(heartbeat.msg || value.msg), fields },
+  };
 }
