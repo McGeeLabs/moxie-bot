@@ -12,6 +12,8 @@ async function shutdown(reason: string, exitCode = 0) {
   stopping = true;
   process.exitCode = exitCode;
   logger.info("Stopping Moxie", { reason });
+  try { await client.valheimMonitor.stop(); }
+  catch { logger.warn("Valheim scheduler shutdown failed"); process.exitCode = 1; }
   try {
     await stopWebhookListener();
   } catch {
@@ -43,6 +45,7 @@ async function main() {
   if (stopping) return;
   await client.login(config.token);
   if (!stopping) await startWebhookListener(webhooks, client.webhooks);
+  if (!stopping) client.valheimMonitor.start();
 }
 
 void main().catch(async error => {

@@ -63,7 +63,7 @@ The roadmap is intentionally flexible and may evolve as features are implemented
 - [x] User confirmed live `monitor` route creation targeting the monitoring channel and guild webhook-module enablement
 - [ ] Verify webhook listener in Linux containers
 - [x] Add native Uptime Kuma push adapter (live test and DOWN notification confirmed; UP recovery pending)
-- [x] Add native Valheim on-demand query adapter (scheduled alerts and live VPS verification pending)
+- [x] Add native Valheim on-demand query adapter (live VPS status confirmed; scheduled alert implementation complete, live rollout pending)
 - [ ] Add native Mealie adapter
 - [ ] Durable queue, idempotency, signed payloads/replay handling (future reliability work)
 
@@ -99,18 +99,35 @@ The roadmap is intentionally flexible and may evolve as features are implemented
 - [x] 53 automated tests pass, including actual local UDP challenge/response, timeout, malformed replies, scope, module gates, and concurrency
 - [x] Verify the completed adapter against the real supplied Nitrado endpoint from Windows
 - [x] Document source checkpoint, additive migration, container-name update, and exact Discord setup
-- [ ] Apply Valheim migration and deploy updated commands/images on forge01
-- [ ] Verify live status from forge01 in Discord and persistence across container restart
-- [ ] Add scheduled checks and transition-only notifications after this milestone is verified
+- [x] User deployed the Valheim update on forge01 and successfully used saved configuration/status
+- [x] User confirmed live Valheim status from forge01 in Discord with the new status card
+- [ ] Verify Valheim configuration persistence across container restart
+- [x] Implement scheduled checks and transition-only notifications after the status milestone was verified
+
+### Milestone 7 — Scheduled Valheim monitoring and operations verification
+
+- [x] Non-overlapping 60-second scheduler with up to four scheduled queries at once
+- [x] Three-failure debounce and transition-only unavailable/recovery cards
+- [x] Persist baseline, consecutive failures, last check, and last notified state
+- [x] Quiet initial baseline and restart behavior; retry failed delivery without stale recovery alerts
+- [x] Module/membership checks and guards against target removal/changes during a query
+- [x] Stop scheduling and drain active checks before Discord/database shutdown
+- [x] Scheduler activity, last completed cycle, and safe error counters in health
+- [x] Extra roadmap item: implement a read-only configuration persistence verifier using counts and a combined fingerprint
+- [x] Extra roadmap item: implement a VPS container smoke/restart verification script and add Bash syntax checks to CI
+- [x] 67 automated tests pass, including restart baselines, debounce, delivery retry, stale-target guards, shutdown, health, and fingerprints
+- [x] Update README and rollout/operations guides
+- [ ] Apply monitoring migration and update images/commands on forge01
+- [ ] Verify live scheduled notifications and run the container restart/persistence script on forge01
 
 ### Next milestones, in priority order
 
 1. Verify enabled `/about`, `/ping`, and saved settings across a bot restart in Discord. Module listing and disable/re-enable controls are verified live. Guild sync, persistent toggles, admin controls, PostgreSQL/Prisma, and database health are implemented.
 2. Complete container smoke checks and restart/shutdown verification. The user confirmed Moxie is deployed and working on forge01.
 3. Verify webhooks in containers. Generic webhook delivery is confirmed live in Discord; the native Kuma adapter passes automated and PostgreSQL/HTTP checks.
-4. Verify Valheim configuration/status on forge01, then implement scheduled checks and transition-only notifications.
+4. Deploy the implemented Valheim scheduler and run its live monitoring and container restart/persistence checks. On-demand Valheim status is confirmed live.
 
-These priorities come before the later community features listed below. PostgreSQL, guild configuration, generic webhooks, and the native Kuma push adapter are implemented. Generic webhook delivery and a native Kuma test notification are confirmed live in Discord. A real Kuma DOWN alert is also confirmed. VPS deployment is confirmed by the user. Direct Kuma test delivery over Docker networking is confirmed. Valheim configuration and on-demand queries are implemented and locally verified against Nitrado. New card formatting on the VPS, Kuma UP recovery, detailed container checks, live VPS Valheim verification, and scheduled Valheim alerts remain pending.
+These priorities come before the later community features listed below. PostgreSQL, guild configuration, generic webhooks, and the native Kuma push adapter are implemented. Generic webhook delivery and a native Kuma test notification are confirmed live in Discord. A real Kuma DOWN alert is also confirmed. VPS deployment is confirmed by the user. Direct Kuma test delivery over Docker networking is confirmed. Valheim configuration and on-demand queries are verified locally and live from forge01 in Discord. New card formatting on the VPS, Kuma UP recovery, detailed container checks, Valheim persistence across restart, and live scheduled Valheim alert verification remain pending.
 
 **⚠️ Stability Notice**: Until Phase 1 is complete, breaking changes may occur (schema changes, command restructures, API modifications). For production deployments, wait until Phase 2 is stable. Check release notes when updating.
 

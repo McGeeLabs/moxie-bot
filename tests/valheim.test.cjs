@@ -175,3 +175,15 @@ test('duplicate and excess concurrent checks are bounded and recover after compl
     assert.equal((await f.service.status('guild-e')).result.status, 'online');
   } finally { release(); await Promise.allSettled(pending); }
 });
+
+test('identical configuration preserves monitor baseline; target changes reset it', async () => {
+  const f = fixture(); await f.configure();
+  const row = f.rows.get('guild-a');
+  Object.assign(row, { monitorStatus: 'unavailable', lastNotifiedStatus: 'unavailable', consecutiveFailures: 3, lastCheckedAt: new Date() });
+  await f.configure();
+  assert.equal(f.rows.get('guild-a').monitorStatus, 'unavailable');
+  await f.configure('guild-a', 'new-host.example');
+  assert.equal(f.rows.get('guild-a').monitorStatus, null);
+  assert.equal(f.rows.get('guild-a').lastNotifiedStatus, null);
+  assert.equal(f.rows.get('guild-a').consecutiveFailures, 0);
+});

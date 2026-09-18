@@ -17,7 +17,7 @@ export class DiscordWebhookDelivery implements WebhookDelivery {
         throw new WebhookError(403, "Moxie needs View Channel and Send Messages in the destination");
       }
       if (needsEmbeds && !channel.permissionsFor(member)?.has(PermissionFlagsBits.EmbedLinks)) {
-        throw new WebhookError(403, "Moxie needs Embed Links in the destination for Uptime Kuma notifications");
+        throw new WebhookError(403, "Moxie needs Embed Links in the destination for notification cards");
       }
       return channel;
     } catch (error) {

@@ -1,4 +1,6 @@
-# Valheim: first monitoring milestone
+# Valheim configuration and status
+
+Scheduled checks and transition-only notifications are now implemented. Follow the [scheduled monitoring update guide](VALHEIM_MONITORING.md) after completing the setup below. The saved channel is now used for alerts when the module is enabled.
 
 Moxie stores one Valheim server configuration per Discord guild and supports on-demand A2S_INFO queries. The `valheim` module starts disabled. All `/moxie valheim` commands require guild Administrator permissions and reply privately. Configuration and removal remain available when the module is disabled; status checks require it to be enabled.
 
@@ -11,7 +13,7 @@ The user supplied a standard, unmodded Nitrado server. A read-only query from th
 - Port **10470** did not answer an information query; it remains the supplied game connection port.
 - The response identifies the server as McGeeLabs Private Server and includes reported player capacity/count and password protection. These are observations at verification time, not permanently current values.
 
-Nitrado distinguishes the game port from the query port in its [connection guide](https://server.nitrado.net/en-US/guides/connecting-to-a-valheim-gameserver-en). The actual Moxie adapter was verified against the supplied query endpoint. VPS-to-Nitrado and live Discord checks remain pending.
+Nitrado distinguishes the game port from the query port in its [connection guide](https://server.nitrado.net/en-US/guides/connecting-to-a-valheim-gameserver-en). The actual Moxie adapter was verified against the supplied query endpoint. The user also confirmed a successful status query from forge01 displayed correctly in Discord, including reported players, latency, version, and password protection.
 
 ## Deploy this update
 
@@ -57,7 +59,7 @@ Use Discord's command picker:
 /moxie valheim status
 ```
 
-The host excludes the port and URL prefix. `query-port` is optional and defaults to game port + 1, but using the verified explicit value is clearest here. The channel must be a same-guild text channel where the bot can view and send messages. It is saved for the next scheduled-alert milestone; this version does not post scheduled alerts there.
+The host excludes the port and URL prefix. `query-port` is optional and defaults to game port + 1, but using the verified explicit value is clearest here. The channel must be a same-guild text channel where the bot can view and send messages. It is used for scheduled alerts after applying the monitoring migration and image update.
 
 Other commands:
 
@@ -79,4 +81,4 @@ Status displays a green card on a valid Valheim reply: server name, game connect
 - Reported player counts and version depend on the server response. The observed Nitrado reply carries its game version in the `g=` tag; otherwise the basic A2S version may be a placeholder.
 - Settings persist in PostgreSQL and are isolated by guild. The module starts disabled, and configuration changes do not enable it automatically.
 
-After live VPS status verification, add scheduled checks and transition-only notifications, including repeated-failure handling and a saved baseline to avoid restart spam. Those alerts are intentionally a separate milestone.
+Live VPS status is verified. Scheduled checks, repeated-failure handling, and saved restart baselines are implemented in the [next monitoring milestone](VALHEIM_MONITORING.md); live scheduled alerts remain to be verified after its migration and image update.

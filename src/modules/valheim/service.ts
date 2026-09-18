@@ -47,8 +47,11 @@ export class ValheimService {
     }
     await this.configuration.ensureGuild(config.guildId);
     const data = { host, gamePort: config.gamePort, queryPort: config.queryPort, channelId: config.channelId };
+    const previous = await this.getConfig(config.guildId);
+    const changed = previous && (Object.keys(data) as Array<keyof typeof data>).some(key => previous[key] !== data[key]);
     await this.storage(config.guildId, database => database.valheimServerConfig.upsert({
-      where: { guildId: config.guildId }, create: { guildId: config.guildId, ...data }, update: data,
+      where: { guildId: config.guildId }, create: { guildId: config.guildId, ...data },
+      update: { ...data, ...(changed ? { monitorStatus: null, lastNotifiedStatus: null, consecutiveFailures: 0, lastCheckedAt: null } : {}) },
     }));
     this.cache.delete(config.guildId);
   }

@@ -7,10 +7,10 @@ import { WebhookError } from "../../integrations/webhooks/errors";
 
 export function buildValheimCommands(group: SlashCommandSubcommandGroupBuilder) {
   return group.setName("valheim").setDescription("Configure and check this server's Valheim host")
-    .addSubcommand(command => command.setName("configure").setDescription("Save a Valheim server and future notification channel")
+    .addSubcommand(command => command.setName("configure").setDescription("Save a Valheim server and monitoring channel")
       .addStringOption(option => option.setName("host").setDescription("Hostname or IP, without port").setRequired(true).setMaxLength(253))
       .addIntegerOption(option => option.setName("game-port").setDescription("Game connection port").setRequired(true).setMinValue(1).setMaxValue(65535))
-      .addChannelOption(option => option.setName("channel").setDescription("Channel reserved for future scheduled alerts").setRequired(true).addChannelTypes(ChannelType.GuildText))
+      .addChannelOption(option => option.setName("channel").setDescription("Channel for scheduled status alerts").setRequired(true).addChannelTypes(ChannelType.GuildText))
       .addIntegerOption(option => option.setName("query-port").setDescription("A2S query port (default: game port + 1)").setMinValue(1).setMaxValue(65535)))
     .addSubcommand(command => command.setName("config").setDescription("Show the saved Valheim configuration"))
     .addSubcommand(command => command.setName("status").setDescription("Query the configured Valheim server now"))
@@ -62,14 +62,14 @@ export async function execute(interaction: ChatInputCommandInteraction, service:
       await service.configure({ guildId, host: interaction.options.getString("host", true), gamePort,
         queryPort: interaction.options.getInteger("query-port") ?? gamePort + 1, channelId });
       logger.info("Valheim configuration saved", { guildId, actorId: interaction.user.id });
-      await interaction.editReply({ content: "Valheim configuration saved. Enable the valheim module, then run /moxie valheim status. Scheduled alerts are the next milestone; the channel is reserved for them." });
+      await interaction.editReply({ content: "Valheim configuration saved. Enable the valheim module for scheduled monitoring every 60 seconds, or run /moxie valheim status. The first stable result establishes a quiet baseline; three failed checks trigger an unavailable alert." });
       return;
     }
     if (action === "config") {
       const config = await service.getConfig(guildId);
       await interaction.editReply({ content: config ? ["**Valheim configuration — this server**",
         `Connect: \`${config.host}:${config.gamePort}\``, `Query port: \`${config.queryPort}\``,
-        `Future alert channel: <#${config.channelId}>`, "Scheduled alerts: Not implemented yet"].join("\n") : "No Valheim server configured. Use /moxie valheim configure." });
+        `Alert channel: <#${config.channelId}>`, "Scheduled checks: Every 60 seconds while the valheim module is enabled"].join("\n") : "No Valheim server configured. Use /moxie valheim configure." });
       return;
     }
     if (action === "remove") {

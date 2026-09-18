@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
   pull_request:
 
 jobs:
@@ -28,6 +28,9 @@ jobs:
 
       - name: Build and test
         run: npm test
+
+      - name: Validate deployment verification script
+        run: bash -n scripts/verify-deployment.sh
 
   docker:
     name: Validate Compose and build Linux images

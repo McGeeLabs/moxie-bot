@@ -6,6 +6,7 @@ import type {
   SlashCommandSubcommandsOnlyBuilder,
 } from "discord.js";
 import type { WebhookService } from "./integrations/webhooks/service";
+import type { ValheimMonitor } from "./modules/valheim/monitor";
 
 export type Command = {
   module?: string;
@@ -21,6 +22,7 @@ export type BotModule = {
 };
 
 export type MoxieClient = Client & {
+  valheimMonitor: ValheimMonitor;
   webhooks: WebhookService;
   commands: Collection<string, Command>;
 };

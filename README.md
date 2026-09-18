@@ -463,7 +463,11 @@ Native Uptime Kuma JSON webhook notifications are supported through a dedicated 
 
 ### Valheim
 
-Administrator-only `/moxie valheim configure`, `config`, `status`, and `remove` commands support one saved server per guild. The `valheim` module starts disabled; status checks return a private card with reported players, query latency, version, and connection details. A failed query is shown as unavailable rather than declaring the server offline. The Nitrado endpoint was verified locally on UDP port 10471; live VPS/Discord checks remain pending. Scheduled notifications are the next milestone. Follow the [Valheim setup guide](docs/VALHEIM.md) for migration, deployment, and the supplied server's exact settings.
+Scheduled monitoring is now implemented: checks every 60 seconds, three failures before an unavailable alert, one recovery alert, and a saved baseline to avoid startup spam. Existing enabled configurations use their saved channel automatically. `/moxie health` includes scheduler diagnostics. Follow the [monitoring update guide](docs/VALHEIM_MONITORING.md) for the new migration and VPS rollout.
+
+Two accompanying operations tools cover saved configuration across restart and container smoke checks: see [operations verification](docs/OPERATIONS.md). `bash scripts/verify-deployment.sh` runs checks; adding `--restart` also tests graceful shutdown and persistence with brief bot downtime. Actual VPS execution remains pending.
+
+Administrator-only `/moxie valheim configure`, `config`, `status`, and `remove` commands support one saved server per guild. The `valheim` module starts disabled; status checks return a private card with reported players, query latency, version, and connection details. A failed query is shown as unavailable rather than declaring the server offline. The Nitrado endpoint on UDP port 10471 is verified both locally and through a live status card from forge01 in Discord. Scheduled notifications are implemented; see the monitoring update guide above. Follow the [Valheim setup guide](docs/VALHEIM.md) for migration, deployment, and the supplied server's exact settings.
 
 ### Verify locally
 
