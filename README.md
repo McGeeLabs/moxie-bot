@@ -463,6 +463,8 @@ Native Uptime Kuma JSON webhook notifications are supported through a dedicated 
 
 ### Valheim
 
+Members can use `/valheim status` to post the existing status card in their channel. It requires the guild's `valheim` module to be enabled and shares the administrator command's 15-second cache and concurrency limits. Administrators still manage the host and alert channel through `/moxie valheim`. See the [public command update instructions](docs/VALHEIM.md#public-status-command-update); this update needs command registration but no new migration.
+
 Scheduled monitoring is now implemented: checks every 60 seconds, three failures before an unavailable alert, one recovery alert, and a saved baseline to avoid startup spam. Existing enabled configurations use their saved channel automatically. `/moxie health` includes scheduler diagnostics. Follow the [monitoring update guide](docs/VALHEIM_MONITORING.md) for the new migration and VPS rollout.
 
 Two accompanying operations tools cover saved configuration across restart and container smoke checks: see [operations verification](docs/OPERATIONS.md). `bash scripts/verify-deployment.sh` runs checks; adding `--restart` also tests graceful shutdown and persistence with brief bot downtime. Actual VPS execution remains pending.

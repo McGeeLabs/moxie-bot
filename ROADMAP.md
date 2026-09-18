@@ -120,7 +120,17 @@ The roadmap is intentionally flexible and may evolve as features are implemented
 - [ ] Apply monitoring migration and update images/commands on forge01
 - [ ] Verify live scheduled notifications and run the container restart/persistence script on forge01
 
-### Next milestones, in priority order
+### Milestone 8 — Member Valheim status
+
+- [x] Add guild-only `/valheim status` without an Administrator permission requirement
+- [x] Reuse the existing card, per-guild module checks, query cache, and concurrency limits
+- [x] Keep configuration and removal under administrator-only `/moxie valheim`
+- [x] Cover member access, disabled modules, DMs, missing configuration, errors, and cache reuse in automated tests
+- [x] TypeScript build and all 71 automated tests pass
+- [ ] Deploy and register the new command on forge01; confirm it with a non-administrator member
+- [ ] Next feature: Mealie on-demand meal plans, followed by scheduled announcements
+
+### Remaining deployment verification
 
 1. Verify enabled `/about`, `/ping`, and saved settings across a bot restart in Discord. Module listing and disable/re-enable controls are verified live. Guild sync, persistent toggles, admin controls, PostgreSQL/Prisma, and database health are implemented.
 2. Complete container smoke checks and restart/shutdown verification. The user confirmed Moxie is deployed and working on forge01.

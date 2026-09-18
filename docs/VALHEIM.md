@@ -4,6 +4,22 @@ Scheduled checks and transition-only notifications are now implemented. Follow t
 
 Moxie stores one Valheim server configuration per Discord guild and supports on-demand A2S_INFO queries. The `valheim` module starts disabled. All `/moxie valheim` commands require guild Administrator permissions and reply privately. Configuration and removal remain available when the module is disabled; status checks require it to be enabled.
 
+## Public status command update
+
+Members can now use `/valheim status`. Its card is visible in the channel where they request it and includes the configured host/game port. Use it in channels where you want members to see those connection details. The command works only in guilds with the `valheim` module enabled and a saved configuration. It shares the existing 15-second on-demand cache and query concurrency limits. `/moxie valheim status` remains a private administrator diagnostic; configuration commands remain administrator-only.
+
+After committing and pushing this update, run these commands in the existing forge01 checkout:
+
+```bash
+moxie() { docker compose --env-file .env.docker -f compose.yaml -f compose.integrations.yaml "$@"; }
+git pull --ff-only
+moxie build bot
+moxie up -d bot
+moxie run --rm bot node dist/deploy-commands.js
+```
+
+No new database migration is needed for this public command; the previous Valheim and monitoring migrations must already be applied. Reload Discord if the command picker is stale. Test `/valheim status` as a non-administrator, then check that the member cannot configure the host through `/moxie valheim`. The public command's live VPS check remains pending.
+
 ## Verified Nitrado endpoint
 
 The user supplied a standard, unmodded Nitrado server. A read-only query from the Windows development environment confirmed:

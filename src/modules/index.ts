@@ -2,6 +2,7 @@ import type { BotModule, Command } from "../types";
 import * as ping from "./admin/ping";
 import * as about from "./status/about";
 import * as moxie from "./admin/moxie";
+import * as valheim from "./valheim/status";
 import { moduleDefinitions } from "./definitions";
 
 // Diagnostics and module controls remain available even when status is disabled.
@@ -10,7 +11,7 @@ export const modules: readonly BotModule[] = [
   { ...moduleDefinitions[1], commands: [about] },
   { ...moduleDefinitions[2], commands: [] },
   { ...moduleDefinitions[3], commands: [] },
-  { ...moduleDefinitions[4], commands: [] },
+  { ...moduleDefinitions[4], commands: [valheim] },
 ];
 
 export function collectCommands(registeredModules: readonly BotModule[]): Command[] {

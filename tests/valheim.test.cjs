@@ -6,6 +6,8 @@ const { ValheimService, ValheimError, normalizeHost } = require('../dist/modules
 const { ConfigurationUnavailableError } = require('../dist/core/database/guildConfiguration');
 const { statusEmbed, execute } = require('../dist/modules/valheim/commands');
 const { execute: admin } = require('../dist/modules/admin/moxie');
+const { data: publicData, execute: publicStatus } = require('../dist/modules/valheim/status');
+const { execute: dispatch } = require('../dist/core/events/interactionCreate');
 
 function packet(folder = 'valheim') {
   const string = value => Buffer.from(value + '\0');
@@ -37,6 +39,59 @@ function fixture(query = async () => ({ ...parseInfo(packet()), latencyMs: 25 })
   const configure = (guildId = 'guild-a', host = 'valheim.example.com') => service.configure({ guildId, host, gamePort: 10470, queryPort: 10471, channelId: `channel-${guildId}` });
   return { service, rows, enabled, configure, advance: () => { time += 15001; } };
 }
+
+test('public Valheim command offers only status, without an administrator restriction', () => {
+  const command = publicData.toJSON();
+  assert.equal(command.name, 'valheim');
+  assert.equal(command.dm_permission, false);
+  assert.equal(command.default_member_permissions, undefined);
+  assert.deepEqual(command.options.map(option => option.name), ['status']);
+});
+
+test('members can request public cards through the module dispatcher without double acknowledgement', async () => {
+  let queries = 0;
+  const f = fixture(async () => { queries++; return { ...parseInfo(packet()), latencyMs: 1 }; });
+  await f.configure();
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const calls = [];
+    const interaction = { guildId: 'guild-a', commandName: 'valheim', deferred: false,
+      isChatInputCommand: () => true, memberPermissions: { has: () => false },
+      client: { commands: new Map([['valheim', { module: 'valheim', execute: value => publicStatus(value, f.service) }]]) },
+      deferReply: async payload => { interaction.deferred = true; calls.push(['defer', payload]); },
+      editReply: async payload => calls.push(['edit', payload]),
+    };
+    await dispatch(interaction, { isEnabled: async () => true });
+    assert.deepEqual(calls.map(call => call[0]), ['defer', 'edit']);
+    assert.equal(calls[0][1], undefined);
+    assert.equal(calls[1][1].embeds[0].title, 'Valheim • Online');
+    assert.deepEqual(calls[1][1].allowedMentions, { parse: [] });
+  }
+  assert.equal(queries, 1);
+});
+
+test('public status refuses DMs and disabled guilds before querying', async () => {
+  const calls = [];
+  await publicStatus({ guildId: null, reply: async value => calls.push(value) }, { status: () => assert.fail('must not query') });
+  assert.equal(calls[0].flags, 64);
+  let executed = false;
+  await dispatch({ guildId: 'guild-a', commandName: 'valheim', isChatInputCommand: () => true,
+    client: { commands: new Map([['valheim', { module: 'valheim', execute: () => { executed = true; } }]]) },
+    deferReply: async () => {}, editReply: async value => calls.push(value),
+  }, { isEnabled: async () => false });
+  assert.equal(executed, false);
+  assert.match(calls[1].content, /disabled/);
+});
+
+test('public status explains missing setup and busy queries; storage failures reach the central handler', async () => {
+  const f = fixture();
+  const replies = [];
+  const interaction = { guildId: 'guild-a', deferred: true, editReply: async value => replies.push(value) };
+  await publicStatus(interaction, f.service);
+  assert.match(replies[0].content, /No Valheim server configured/);
+  await publicStatus(interaction, { status: async () => { throw new ValheimError('The query is busy. Try again shortly.'); } });
+  assert.match(replies[1].content, /busy/);
+  await assert.rejects(() => publicStatus(interaction, { status: async () => { throw new ConfigurationUnavailableError(); } }), ConfigurationUnavailableError);
+});
 
 test('A2S parses reported players, password flag, and actual version tag; rejects truncated packets', () => {
   const result = parseInfo(packet());
