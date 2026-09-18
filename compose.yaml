@@ -1,6 +1,7 @@
 # Existing PostgreSQL container. Always pass --env-file .env.docker.
 services:
   bot:
+    container_name: ${MOXIE_CONTAINER_NAME:-moxie-bot}
     image: moxie-bot:local
     build:
       context: .

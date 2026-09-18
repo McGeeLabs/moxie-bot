@@ -19,7 +19,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       `Gateway latency: ${ping < 0 ? "Not available yet" : `${Math.round(ping)}ms`}`,
       `Database: ${databaseStatus}`,
       `Webhook API: ${getWebhookListenerStatus() ? "Listening" : "Disabled"}`,
-      "Service adapters: Uptime Kuma webhook supported (push notifications)",
+      "Service adapters: Uptime Kuma push notifications; Valheim on-demand queries",
     ].join("\n"),
   });
 }

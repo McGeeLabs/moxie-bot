@@ -45,6 +45,8 @@ Use the real database name and a role with the required access. The database mus
 
 Compose attaches the bot to both a normal outbound network and the external database network. The external network must already exist; Compose does not create or delete it. See [Docker's networking guide](https://docs.docker.com/compose/how-tos/networking/) for service names and external networks.
 
+The bot container is explicitly named `moxie-bot`; `MOXIE_CONTAINER_NAME` can override this for a second installation. The Compose service remains `bot`. To apply the name update, recreate the service with `up -d bot` using the same checkout/project. Do not manually rename the container or change the Compose project name to achieve this.
+
 Validate quietly to avoid printing resolved secrets, then build both images:
 
 ```bash

@@ -63,7 +63,8 @@ The roadmap is intentionally flexible and may evolve as features are implemented
 - [x] User confirmed live `monitor` route creation targeting the monitoring channel and guild webhook-module enablement
 - [ ] Verify webhook listener in Linux containers
 - [x] Add native Uptime Kuma push adapter (live test and DOWN notification confirmed; UP recovery pending)
-- [ ] Add native Valheim and Mealie adapters
+- [x] Add native Valheim on-demand query adapter (scheduled alerts and live VPS verification pending)
+- [ ] Add native Mealie adapter
 - [ ] Durable queue, idempotency, signed payloads/replay handling (future reliability work)
 
 ### Milestone 5 — Uptime Kuma push notifications
@@ -86,14 +87,30 @@ The roadmap is intentionally flexible and may evolve as features are implemented
 - [x] 40 automated tests pass, including actual embed send options, missing Embed Links, mention suppression, and generic text delivery
 - [ ] Verify new card formatting live after rebuilding the VPS image
 
+### Milestone 6 — Valheim configuration and on-demand status
+
+- [x] Stable default bot container name moxie-bot in both Compose configurations
+- [x] Verify supplied Nitrado hostname and UDP query port 10471 with read-only queries
+- [x] Native A2S_INFO adapter with timeout, challenge limit, response-size limit, and safe diagnostics
+- [x] Per-guild PostgreSQL configuration with separate game/query ports and reserved alert channel
+- [x] Disabled-by-default valheim module and guild Administrator controls
+- [x] Configure/config/status/remove commands and private status cards
+- [x] Brief result cache, per-guild duplicate-check guard, and four-query concurrency limit
+- [x] 53 automated tests pass, including actual local UDP challenge/response, timeout, malformed replies, scope, module gates, and concurrency
+- [x] Verify the completed adapter against the real supplied Nitrado endpoint from Windows
+- [x] Document source checkpoint, additive migration, container-name update, and exact Discord setup
+- [ ] Apply Valheim migration and deploy updated commands/images on forge01
+- [ ] Verify live status from forge01 in Discord and persistence across container restart
+- [ ] Add scheduled checks and transition-only notifications after this milestone is verified
+
 ### Next milestones, in priority order
 
 1. Verify enabled `/about`, `/ping`, and saved settings across a bot restart in Discord. Module listing and disable/re-enable controls are verified live. Guild sync, persistent toggles, admin controls, PostgreSQL/Prisma, and database health are implemented.
 2. Complete container smoke checks and restart/shutdown verification. The user confirmed Moxie is deployed and working on forge01.
 3. Verify webhooks in containers. Generic webhook delivery is confirmed live in Discord; the native Kuma adapter passes automated and PostgreSQL/HTTP checks.
-4. Complete live Uptime Kuma verification, then begin Valheim monitoring with per-guild settings and notification destinations.
+4. Verify Valheim configuration/status on forge01, then implement scheduled checks and transition-only notifications.
 
-These priorities come before the later community features listed below. PostgreSQL, guild configuration, generic webhooks, and the native Kuma push adapter are implemented. Generic webhook delivery and a native Kuma test notification are confirmed live in Discord. A real Kuma DOWN alert is also confirmed. VPS deployment is confirmed by the user. Direct Kuma test delivery over Docker networking is confirmed. New card formatting on the VPS, Kuma UP recovery, detailed container checks, and Valheim monitoring remain pending.
+These priorities come before the later community features listed below. PostgreSQL, guild configuration, generic webhooks, and the native Kuma push adapter are implemented. Generic webhook delivery and a native Kuma test notification are confirmed live in Discord. A real Kuma DOWN alert is also confirmed. VPS deployment is confirmed by the user. Direct Kuma test delivery over Docker networking is confirmed. Valheim configuration and on-demand queries are implemented and locally verified against Nitrado. New card formatting on the VPS, Kuma UP recovery, detailed container checks, live VPS Valheim verification, and scheduled Valheim alerts remain pending.
 
 **⚠️ Stability Notice**: Until Phase 1 is complete, breaking changes may occur (schema changes, command restructures, API modifications). For production deployments, wait until Phase 2 is stable. Check release notes when updating.
 

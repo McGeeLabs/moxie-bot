@@ -10,6 +10,7 @@ export const modules: readonly BotModule[] = [
   { ...moduleDefinitions[1], commands: [about] },
   { ...moduleDefinitions[2], commands: [] },
   { ...moduleDefinitions[3], commands: [] },
+  { ...moduleDefinitions[4], commands: [] },
 ];
 
 export function collectCommands(registeredModules: readonly BotModule[]): Command[] {

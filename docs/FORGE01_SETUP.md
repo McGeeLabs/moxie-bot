@@ -124,6 +124,8 @@ Close the old reverse SSH tunnel and PostgreSQL tunnel on Windows with Ctrl+C if
 
 ## Updates and shutdown
 
+The bot now uses the explicit container name `moxie-bot` (or `MOXIE_CONTAINER_NAME` if set). After pulling the change, `moxie up -d bot` recreates the existing generated-name bot under the new name. Continue using this checkout and the same Compose project. The service name remains `bot`; Kuma's network alias remains `moxie-bot`. See the [Valheim milestone guide](VALHEIM.md) for the accompanying migration and commands.
+
 For the notification-card update, commit and push the local source changes first. On forge01, enter the checkout and recreate the `moxie` helper from step 3 if using a new shell. Pull the same branch, rebuild the bot, and recreate it:
 
 ```bash

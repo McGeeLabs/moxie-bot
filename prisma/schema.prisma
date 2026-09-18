@@ -16,6 +16,7 @@ model Guild {
   updatedAt DateTime @updatedAt
   modules   GuildModuleConfig[]
   webhooks  WebhookRoute[]
+  valheim   ValheimServerConfig?
 }
 
 model WebhookRoute {
@@ -46,4 +47,15 @@ model GuildModuleConfig {
   guild     Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
 
   @@id([guildId, module])
+}
+
+model ValheimServerConfig {
+  guildId   String   @id
+  host      String
+  gamePort  Int
+  queryPort Int
+  channelId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  guild     Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
 }

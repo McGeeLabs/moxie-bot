@@ -461,6 +461,10 @@ Live test delivery from Kuma 1.23.17 is confirmed both through the Windows devel
 
 Native Uptime Kuma JSON webhook notifications are supported through a dedicated route provider and disabled-by-default `uptimeKuma` module. Create a route with `/moxie webhook create name:kuma channel:#monitoring provider:Uptime Kuma`, then enable both `webhooks` and `uptimeKuma` for the guild. Existing generic routes keep their original format. Follow the [Uptime Kuma setup guide](docs/UPTIME_KUMA.md), including connectivity from forge01 to your local Windows bot.
 
+### Valheim
+
+Administrator-only `/moxie valheim configure`, `config`, `status`, and `remove` commands support one saved server per guild. The `valheim` module starts disabled; status checks return a private card with reported players, query latency, version, and connection details. A failed query is shown as unavailable rather than declaring the server offline. The Nitrado endpoint was verified locally on UDP port 10471; live VPS/Discord checks remain pending. Scheduled notifications are the next milestone. Follow the [Valheim setup guide](docs/VALHEIM.md) for migration, deployment, and the supplied server's exact settings.
+
 ### Verify locally
 
 ```powershell
