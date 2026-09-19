@@ -29,7 +29,7 @@ function headers(response: ServerResponse, type: string) {
   response.setHeader("Content-Type", type);
   response.setHeader("Cache-Control", "no-store");
   response.setHeader("X-Content-Type-Options", "nosniff");
-  response.setHeader("Referrer-Policy", "no-referrer");
+  response.setHeader("Referrer-Policy", "same-origin");
   response.setHeader("X-Frame-Options", "DENY");
   response.setHeader("Content-Security-Policy", "default-src 'none'; style-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'");
 }
@@ -144,10 +144,8 @@ export class DashboardServer {
       return;
     }
     if (method === "POST") {
-      // Some privacy settings and reverse proxies omit Origin on ordinary HTML form posts.
-      // Reject any supplied foreign origin; the session-bound CSRF token still protects requests without it.
-      if (request.headers.origin && request.headers.origin !== this.config.baseUrl.origin) {
-        logger.warn("Dashboard form origin rejected", { origin: request.headers.origin, expected: this.config.baseUrl.origin,
+      if (request.headers.origin !== this.config.baseUrl.origin) {
+        logger.warn("Dashboard form origin rejected", { origin: request.headers.origin ?? "missing", expected: this.config.baseUrl.origin,
           fetchSite: request.headers["sec-fetch-site"] ?? "missing" });
         page(response, "Forbidden", "<p>Invalid request origin.</p>", 403); return;
       }

@@ -93,6 +93,7 @@ test('dashboard requires matching OAuth state and protects settings with fresh a
     assert.match(homeHtml, /&lt;My &amp; Guild&gt;/);
     assert.doesNotMatch(homeHtml, /<My & Guild>/);
     assert.match(homeHtml, /<a class="brand" href="\/" aria-label="Moxie dashboard home">/);
+    assert.equal(home.headers.get('referrer-policy'), 'same-origin');
     assert.match(home.headers.get('content-security-policy'), /frame-ancestors 'none'/);
     const panel = await fetch(`${base}/guild/${guildId}`, { headers: { cookie: `moxie_session=${session}` } });
     const html = await panel.text();
@@ -105,23 +106,18 @@ test('dashboard requires matching OAuth state and protects settings with fresh a
     });
     assert.equal((await post(`/guild/${guildId}/module`, { csrf: 'invalid', name: 'moderation', enabled: 'true' })).status, 403);
     assert.equal((await post(`/guild/${guildId}/module`, { csrf, name: 'moderation', enabled: 'true' }, 'http://evil.example')).status, 403);
+    assert.equal((await post(`/guild/${guildId}/module`, { csrf, name: 'moderation', enabled: 'true' }, 'null')).status, 403);
     assert.equal((await post(`/guild/${guildId}/module`, { csrf, name: 'admin', enabled: 'false' })).status, 400);
     assert.deepEqual(f.changes, []);
     const update = await post(`/guild/${guildId}/module`, { csrf, name: 'moderation', enabled: 'true' });
     assert.equal(update.status, 303);
     assert.deepEqual(f.changes[0], ['module', guildId, 'moderation', true]);
-    const missingOrigin = await fetch(`${base}/guild/${guildId}/module`, { method: 'POST', redirect: 'manual',
-      headers: { cookie: `moxie_session=${session}`, 'content-type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ csrf, name: 'moderation', enabled: 'false' }),
-    });
-    assert.equal(missingOrigin.status, 303);
-    assert.deepEqual(f.changes[1], ['module', guildId, 'moderation', false]);
     const channel = await post(`/guild/${guildId}/log-channel`, { csrf, channel: channelId });
     assert.equal(channel.status, 303);
-    assert.deepEqual(f.changes.slice(2), [['validate', guildId, channelId, true], ['channel', guildId, channelId]]);
+    assert.deepEqual(f.changes.slice(1), [['validate', guildId, channelId, true], ['channel', guildId, channelId]]);
     f.revokeAdministrator();
     assert.equal((await post(`/guild/${guildId}/module`, { csrf, name: 'moderation', enabled: 'false' })).status, 403);
-    assert.equal(f.changes.length, 4);
+    assert.equal(f.changes.length, 3);
     f.revokeGuildAccess();
     assert.equal((await fetch(`${base}/guild/${guildId}`, { headers: { cookie: `moxie_session=${session}` } })).status, 403);
   } finally { await f.dashboard.stop(); }
