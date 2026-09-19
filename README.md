@@ -457,7 +457,7 @@ Enable the optional local listener with `WEBHOOK_ENABLED=true` in `.env`, then e
 
 ### Custom commands
 
-Administrators can save up to 50 text responses per server using `/moxie command add`, `edit`, `delete`, and `list`. After enabling the **customCommands** module for that server, members can use `/cmd run name:<name>` or `/cmd list`. Responses are limited to 1,800 characters and never ping roles or members, even if the saved text contains an `@` mention. See the [custom commands guide](docs/CUSTOM_COMMANDS.md) for the rollout steps and examples.
+Administrators can save up to 50 text responses per server using `/moxie command add`, `edit`, `delete`, and `list`. After enabling the **customCommands** module for that server, members can use `/cmd run name:<name>` or `/cmd list`. Responses are limited to 1,800 characters and never ping roles or members, even if the saved text contains an `@` mention. The migration and slash commands are deployed on forge01; live command behavior awaits a Discord check. See the [custom commands guide](docs/CUSTOM_COMMANDS.md) for examples.
 
 ### Uptime Kuma
 

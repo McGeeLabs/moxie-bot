@@ -213,7 +213,8 @@ Database-backed admin-defined commands. Enables server owners to create custom r
 - [x] Per-guild database schema for text custom commands
 - [x] `/cmd run name:<name>` and `/cmd list` for members, gated by the customCommands module
 - [x] Administrator-only `/moxie command add`, `edit`, `delete`, and `list`
-- [ ] Verify migration, command registration, and live text response on forge01
+- [x] Apply additive migration and register updated guild slash commands on forge01; bot, database, and dashboard healthy
+- [ ] Verify add, edit, run, list, delete, and mention suppression live in Discord
 - [ ] Embed support for custom responses
 - [ ] Command usage logging
 
