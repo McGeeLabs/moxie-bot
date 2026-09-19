@@ -25,7 +25,7 @@ export async function execute(interaction: Interaction, configuration: GuildConf
         await interaction.reply({ content: "This module is available in servers only.", flags: MessageFlags.Ephemeral });
         return;
       }
-      await interaction.deferReply();
+      await interaction.deferReply(cmd.ephemeral ? { flags: MessageFlags.Ephemeral } : undefined);
       if (!await configuration.isEnabled(interaction.guildId, module.name)) {
         await interaction.editReply({ content: `The **${module.name}** module is disabled in this server. An administrator can enable it with /moxie module.` });
         return;

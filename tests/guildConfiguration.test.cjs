@@ -68,6 +68,7 @@ test('guild defaults are idempotent, isolated, and persist across service instan
     { name: 'webhooks', required: false, enabled: false },
     { name: 'uptimeKuma', required: false, enabled: false },
     { name: 'valheim', required: false, enabled: false },
+    { name: 'moderation', required: false, enabled: false },
   ]);
 });
 
@@ -145,7 +146,7 @@ test('admin listing and toggle update use the interaction guild and ephemeral re
   assert.equal(await configuration.isEnabled('guild-b', 'status'), true);
   assert.match(toggle.calls[1][1].content, /disabled/);
   assert.equal(toggle.calls[0][1].flags, MessageFlags.Ephemeral);
-  assert.deepEqual(data.toJSON().options.map(option => option.name), ['health', 'modules', 'module', 'webhook', 'valheim']);
+  assert.deepEqual(data.toJSON().options.map(option => option.name), ['health', 'modules', 'module', 'webhook', 'valheim', 'moderation']);
 });
 
 test('startup sync attempts every guild even when one registration fails', async () => {

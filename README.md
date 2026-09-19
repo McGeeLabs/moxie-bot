@@ -155,6 +155,8 @@ Moxie will provide a configurable moderation toolkit including:
 
 Moderation features will be designed around explicit permissions and clear accountability.
 
+The first moderation milestone is implemented. Each guild can configure its own audit channel, and moderators can use `/warn`, `/warnings`, `/timeout`, and `/untimeout`. Commands require **Moderate Members**, respond privately, enforce moderator and bot role hierarchy, and are disabled until the guild's `moderation` module is enabled. Warning history is stored in PostgreSQL and retained if the log-channel setting is removed. See the [moderation setup guide](docs/MODERATION.md).
+
 ---
 
 ## 🩺 Moxie Health

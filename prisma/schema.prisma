@@ -17,6 +17,8 @@ model Guild {
   modules   GuildModuleConfig[]
   webhooks  WebhookRoute[]
   valheim   ValheimServerConfig?
+  moderation ModerationConfig?
+  warnings  ModerationWarning[]
 }
 
 model WebhookRoute {
@@ -67,4 +69,24 @@ model ValheimServerConfig {
 enum ValheimMonitorStatus {
   online
   unavailable
+}
+
+model ModerationConfig {
+  guildId      String   @id
+  logChannelId String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  guild        Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+}
+
+model ModerationWarning {
+  id              String   @id @default(uuid())
+  guildId         String
+  targetUserId    String
+  moderatorUserId String
+  reason          String
+  createdAt       DateTime @default(now())
+  guild           Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@index([guildId, targetUserId, createdAt])
 }

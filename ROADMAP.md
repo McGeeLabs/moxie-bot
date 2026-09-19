@@ -127,8 +127,19 @@ The roadmap is intentionally flexible and may evolve as features are implemented
 - [x] Keep configuration and removal under administrator-only `/moxie valheim`
 - [x] Cover member access, disabled modules, DMs, missing configuration, errors, and cache reuse in automated tests
 - [x] TypeScript build and all 71 automated tests pass
-- [ ] Deploy and register the new command on forge01; confirm it with a non-administrator member
-- [ ] Next feature: Mealie on-demand meal plans, followed by scheduled announcements
+- [x] Deploy and register the new command on forge01; user confirmed it works
+- [x] Skip the planned Mealie adapter at the user's request
+
+### Milestone 9 — Moderation foundation
+
+- [x] Add per-guild moderation log-channel configuration
+- [x] Add durable `/warn` cases and private `/warnings` history
+- [x] Add `/timeout` and `/untimeout` with bounded durations and safe audit reasons
+- [x] Require Moderate Members and enforce moderator, bot, owner, self, and target role checks
+- [x] Send modern audit cards while suppressing mentions; keep successful actions when log delivery fails
+- [x] Include moderation settings and warning history in restart persistence fingerprints
+- [x] Prisma schema validation, TypeScript build, and all 80 automated tests pass
+- [ ] Apply the migration, deploy commands, configure the log channel, and verify all four commands on forge01
 
 ### Remaining deployment verification
 
@@ -206,12 +217,14 @@ Database-backed admin-defined commands. Enables server owners to create custom r
 
 Core moderation tooling for server safety and audit trails.
 
-- [ ] Moderation commands: `warn`, `kick`, `ban`, `timeout`
-- [ ] Moderation action logging to database
-- [ ] Configurable log channels per guild
-- [ ] Case IDs for mod actions (for easy reference)
-- [ ] Mod action reason tracking
-- [ ] Case history lookup command
+- [x] Initial moderation commands: `warn`, `warnings`, `timeout`, and `untimeout`
+- [x] Persist warning records in PostgreSQL
+- [x] Configurable moderation log channel per guild
+- [x] Case IDs and reason tracking for warnings
+- [x] Warning history lookup command
+- [x] Runtime permission checks, moderator/bot role hierarchy checks, and private confirmations
+- [ ] Store timeout, kick, and ban cases in the database
+- [ ] Add kick and ban commands
 
 **Depends on**: Phase 1
 

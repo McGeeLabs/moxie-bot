@@ -45,7 +45,7 @@ test('runtime only needs a token; deployment validates IDs without exposing valu
 });
 
 test('registry serializes all commands and rejects name collisions', () => {
-  assert.deepEqual(commands.map(command => command.data.toJSON().name).sort(), ['about', 'moxie', 'ping', 'valheim']);
+  assert.deepEqual(commands.map(command => command.data.toJSON().name).sort(), ['about', 'moxie', 'ping', 'timeout', 'untimeout', 'valheim', 'warn', 'warnings']);
   assert.throws(() => collectCommands([{ name: 'duplicate', commands: [commands[0], commands[0]] }]), /Duplicate command: ping/);
 });
 

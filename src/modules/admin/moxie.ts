@@ -6,6 +6,7 @@ import { moduleDefinitions } from "../definitions";
 import { execute as health } from "./health";
 import { buildWebhookCommands, execute as webhookCommand } from "./webhooks";
 import { buildValheimCommands, execute as valheimCommand } from "../valheim/commands";
+import { buildModerationCommands, execute as moderationCommand } from "../moderation/admin";
 
 export const data = new SlashCommandBuilder()
   .setName("moxie")
@@ -19,10 +20,15 @@ export const data = new SlashCommandBuilder()
       .addChoices(...moduleDefinitions.filter(module => !module.required).map(module => ({ name: module.name, value: module.name }))))
     .addBooleanOption(option => option.setName("enabled").setDescription("Whether the module should be enabled").setRequired(true)))
   .addSubcommandGroup(buildWebhookCommands)
-  .addSubcommandGroup(buildValheimCommands);
+  .addSubcommandGroup(buildValheimCommands)
+  .addSubcommandGroup(buildModerationCommands);
 
 export async function execute(interaction: ChatInputCommandInteraction, configuration: GuildConfiguration = guildConfiguration) {
   if (!await requireGuildAdministrator(interaction)) return;
+  if (interaction.options.getSubcommandGroup?.(false) === "moderation") {
+    await moderationCommand(interaction);
+    return;
+  }
   if (interaction.options.getSubcommandGroup?.(false) === "valheim") {
     await valheimCommand(interaction);
     return;

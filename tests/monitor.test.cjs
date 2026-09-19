@@ -169,6 +169,8 @@ test('persistence fingerprint is order-independent, contains no secret hashes, a
     guild: [{ id: 'guild-b' }, { id: 'guild-a' }], guildModuleConfig: [{ guildId: 'guild-a', module: 'valheim', enabled: true }],
     webhookRoute: [{ id: 'route', guildId: 'guild-a', name: 'kuma', secretHash: 'secret-hash' }],
     valheimServerConfig: [{ guildId: 'guild-a', host: 'server.example', gamePort: 10470, queryPort: 10471, channelId: 'channel-a' }],
+    moderationConfig: [{ guildId: 'guild-a', logChannelId: 'mod-log' }],
+    moderationWarning: [{ id: 'case-a', guildId: 'guild-a', targetUserId: 'member-a', moderatorUserId: 'mod-a', reason: 'reason', createdAt: new Date(1000) }],
   };
   const db = Object.fromEntries(Object.keys(rows).map(name => [name, { findMany: async args => rows[name].map(row =>
     Object.fromEntries(Object.keys(args.select).map(key => [key, row[key]]))) }]));
@@ -180,6 +182,9 @@ test('persistence fingerprint is order-independent, contains no secret hashes, a
   rows.valheimServerConfig[0].consecutiveFailures = 3;
   assert.deepEqual(await persistenceSnapshot(db), first);
   rows.valheimServerConfig[0].queryPort++;
+  assert.notEqual((await persistenceSnapshot(db)).digest, first.digest);
+  rows.valheimServerConfig[0].queryPort--;
+  rows.moderationWarning[0].reason = 'changed warning';
   assert.notEqual((await persistenceSnapshot(db)).digest, first.digest);
 });
 

@@ -3,6 +3,7 @@ import type {
   Client,
   Collection,
   SlashCommandBuilder,
+  SlashCommandOptionsOnlyBuilder,
   SlashCommandSubcommandsOnlyBuilder,
 } from "discord.js";
 import type { WebhookService } from "./integrations/webhooks/service";
@@ -10,7 +11,8 @@ import type { ValheimMonitor } from "./modules/valheim/monitor";
 
 export type Command = {
   module?: string;
-  data: SlashCommandBuilder | SlashCommandSubcommandsOnlyBuilder;
+  ephemeral?: boolean;
+  data: SlashCommandBuilder | SlashCommandOptionsOnlyBuilder | SlashCommandSubcommandsOnlyBuilder;
   execute: (interaction: ChatInputCommandInteraction) => Promise<void>;
 };
 

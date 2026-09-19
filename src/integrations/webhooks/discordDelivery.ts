@@ -26,8 +26,8 @@ export class DiscordWebhookDelivery implements WebhookDelivery {
     }
   }
 
-  async validateDestination(guildId: string, channelId: string): Promise<void> {
-    await this.destination(guildId, channelId);
+  async validateDestination(guildId: string, channelId: string, needsEmbeds = false): Promise<void> {
+    await this.destination(guildId, channelId, needsEmbeds);
   }
 
   async send(guildId: string, channelId: string, content: string, embed?: APIEmbed): Promise<void> {

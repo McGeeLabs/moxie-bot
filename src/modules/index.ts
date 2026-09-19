@@ -3,6 +3,10 @@ import * as ping from "./admin/ping";
 import * as about from "./status/about";
 import * as moxie from "./admin/moxie";
 import * as valheim from "./valheim/status";
+import * as warn from "./moderation/warn";
+import * as warnings from "./moderation/warnings";
+import * as timeout from "./moderation/timeout";
+import * as untimeout from "./moderation/untimeout";
 import { moduleDefinitions } from "./definitions";
 
 // Diagnostics and module controls remain available even when status is disabled.
@@ -12,6 +16,7 @@ export const modules: readonly BotModule[] = [
   { ...moduleDefinitions[2], commands: [] },
   { ...moduleDefinitions[3], commands: [] },
   { ...moduleDefinitions[4], commands: [valheim] },
+  { ...moduleDefinitions[5], commands: [warn, warnings, timeout, untimeout] },
 ];
 
 export function collectCommands(registeredModules: readonly BotModule[]): Command[] {

@@ -4,4 +4,5 @@ export const moduleDefinitions = [
   { name: "webhooks", required: false, defaultEnabled: false },
   { name: "uptimeKuma", required: false, defaultEnabled: false },
   { name: "valheim", required: false, defaultEnabled: false },
+  { name: "moderation", required: false, defaultEnabled: false },
 ] as const;
