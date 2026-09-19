@@ -200,7 +200,7 @@ Moxie v0.3.2
 
 ## 🌐 Web Dashboard
 
-A first web dashboard slice is implemented but disabled by default. Discord OAuth sign-in, current Administrator checks for each selected guild, module toggles, and moderation log-channel setup share the bot's existing services and PostgreSQL data. See the [dashboard setup guide](docs/DASHBOARD.md). Later dashboard pages remain planned.
+A first web dashboard slice is implemented but disabled by default. Discord OAuth sign-in, current Administrator checks for each selected guild, module toggles, and moderation log-channel setup share the bot's existing services and PostgreSQL data. The user verified these controls behind HTTPS on forge01. See the [dashboard setup guide](docs/DASHBOARD.md). Read-only moderation case browsing is the next dashboard slice; later management pages remain planned.
 
 The planned dashboard expansion will provide an interface for managing:
 

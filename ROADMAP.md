@@ -304,7 +304,8 @@ User-friendly web interface for bot management, reducing CLI/code dependency. Th
 - [ ] Moderation log viewer with filters
 - [x] Feature toggles per guild (enable/disable modules)
 - [x] Per-guild moderation log-channel setup and removal
-- [ ] Verify dashboard OAuth and settings on a local test callback, then deploy behind HTTPS on forge01
+- [x] Deploy dashboard behind HTTPS on forge01; user verified Discord sign-in, module toggles, and moderation log-channel changes
+- [ ] Add read-only per-guild moderation case browsing with member/action filters and case details
 - [ ] Basic role reward configuration
 
 **Tech**: Current slice uses TypeScript and Node's built-in HTTP server in the bot process. Evaluate a separate frontend framework only if later dashboard complexity warrants it.
