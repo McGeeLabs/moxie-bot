@@ -36,7 +36,7 @@ function headers(response: ServerResponse, type: string) {
 function page(response: ServerResponse, title: string, body: string, status = 200) {
   response.statusCode = status;
   headers(response, "text/html; charset=utf-8");
-  response.end(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(title)} · Moxie</title><link rel="stylesheet" href="/style.css"></head><body><main><header><span class="brand">✦ Moxie</span><span class="eyebrow">ADMIN DASHBOARD</span></header>${body}</main></body></html>`);
+  response.end(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(title)} · Moxie</title><link rel="stylesheet" href="/style.css"></head><body><main><header><a class="brand" href="/" aria-label="Moxie dashboard home">✦ Moxie</a><span class="eyebrow">ADMIN DASHBOARD</span></header>${body}</main></body></html>`);
 }
 function redirect(response: ServerResponse, location: string) {
   response.statusCode = 303;
@@ -59,7 +59,7 @@ async function form(request: IncomingMessage): Promise<URLSearchParams> {
   return new URLSearchParams(Buffer.concat(chunks).toString("utf8"));
 }
 
-const style = `:root{font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:#e8eaf7;background:#0e1220}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#202b50,#0e1220 60%);min-height:100vh}main{max-width:860px;margin:auto;padding:38px 20px 90px}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:56px}.brand{font-weight:800;font-size:1.55rem;letter-spacing:-.04em}.eyebrow{font-size:.7rem;font-weight:700;letter-spacing:.18em;color:#9aa9d7}h1{font-size:clamp(2rem,5vw,3.4rem);letter-spacing:-.05em;margin:0 0 12px}h2{font-size:1.2rem;margin:0 0 12px}p{line-height:1.6;color:#adb8d1}a{color:#a9b9ff}a.button,button{display:inline-block;border:0;border-radius:11px;background:#637bfa;color:white;font-weight:700;padding:11px 16px;text-decoration:none;cursor:pointer}button.secondary{background:#2c3653}.card{background:#1a2136;border:1px solid #35415e;border-radius:18px;padding:24px;margin:20px 0;box-shadow:0 20px 55px #0002}.row{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;border-top:1px solid #35415e;padding:15px 0}.row:first-of-type{border-top:0}.muted{font-size:.85rem;color:#9aa7c4}.badge{border-radius:99px;padding:4px 9px;font-size:.7rem;font-weight:700;background:#34436d;color:#d1dcff}.badge.off{background:#393d4d;color:#b8bfce}select{background:#10172a;color:#e8eaf7;border:1px solid #465576;border-radius:9px;padding:10px;max-width:100%}form.inline{display:inline-flex;align-items:center;gap:10px}nav{margin-bottom:25px}.alert{background:#2d2535;border-left:3px solid #ffba69;padding:13px 16px;border-radius:8px}`;
+const style = `:root{font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:#e8eaf7;background:#0e1220}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#202b50,#0e1220 60%);min-height:100vh}main{max-width:860px;margin:auto;padding:38px 20px 90px}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:56px}.brand{font-weight:800;font-size:1.55rem;letter-spacing:-.04em;color:inherit;text-decoration:none}.brand:hover,.brand:focus-visible{color:#a9b9ff}.eyebrow{font-size:.7rem;font-weight:700;letter-spacing:.18em;color:#9aa9d7}h1{font-size:clamp(2rem,5vw,3.4rem);letter-spacing:-.05em;margin:0 0 12px}h2{font-size:1.2rem;margin:0 0 12px}p{line-height:1.6;color:#adb8d1}a{color:#a9b9ff}a.button,button{display:inline-block;border:0;border-radius:11px;background:#637bfa;color:white;font-weight:700;padding:11px 16px;text-decoration:none;cursor:pointer}button.secondary{background:#2c3653}.card{background:#1a2136;border:1px solid #35415e;border-radius:18px;padding:24px;margin:20px 0;box-shadow:0 20px 55px #0002}.row{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;border-top:1px solid #35415e;padding:15px 0}.row:first-of-type{border-top:0}.muted{font-size:.85rem;color:#9aa7c4}.badge{border-radius:99px;padding:4px 9px;font-size:.7rem;font-weight:700;background:#34436d;color:#d1dcff}.badge.off{background:#393d4d;color:#b8bfce}select{background:#10172a;color:#e8eaf7;border:1px solid #465576;border-radius:9px;padding:10px;max-width:100%}form.inline{display:inline-flex;align-items:center;gap:10px}nav{margin-bottom:25px}.alert{background:#2d2535;border-left:3px solid #ffba69;padding:13px 16px;border-radius:8px}`;
 
 export class DashboardServer {
   private server?: Server;
@@ -144,7 +144,13 @@ export class DashboardServer {
       return;
     }
     if (method === "POST") {
-      if (request.headers.origin !== this.config.baseUrl.origin) { page(response, "Forbidden", "<p>Invalid request origin.</p>", 403); return; }
+      // Some privacy settings and reverse proxies omit Origin on ordinary HTML form posts.
+      // Reject any supplied foreign origin; the session-bound CSRF token still protects requests without it.
+      if (request.headers.origin && request.headers.origin !== this.config.baseUrl.origin) {
+        logger.warn("Dashboard form origin rejected", { origin: request.headers.origin, expected: this.config.baseUrl.origin,
+          fetchSite: request.headers["sec-fetch-site"] ?? "missing" });
+        page(response, "Forbidden", "<p>Invalid request origin.</p>", 403); return;
+      }
       const fields = await form(request);
       if (!equal(fields.get("csrf") ?? "", session.csrf)) { page(response, "Forbidden", "<p>Invalid form token.</p>", 403); return; }
       if (path === "/logout") {
