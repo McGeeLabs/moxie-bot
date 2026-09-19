@@ -302,6 +302,7 @@ User-friendly web interface for bot management, reducing CLI/code dependency. Th
 - [ ] Custom command management UI (create, edit, delete)
 - [ ] Reaction role UI (visual mapping builder)
 - [x] Read-only moderation case viewer with per-guild member/action filters, pagination, and case details
+- [x] User verified the live moderation case viewer on forge01
 - [x] Feature toggles per guild (enable/disable modules)
 - [x] Per-guild moderation log-channel setup and removal
 - [x] Deploy dashboard behind HTTPS on forge01; user verified Discord sign-in, module toggles, and moderation log-channel changes
