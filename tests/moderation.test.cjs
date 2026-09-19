@@ -30,9 +30,9 @@ function repository() {
     moderationCase: {
       create: async args => { const row = { id: `case-${++number}`, action: 'warn', durationMinutes: null,
         createdAt: new Date(number * 1000), updatedAt: new Date(number * 1000), reasonUpdatedAt: null, reasonUpdatedById: null, ...args.data }; cases.push(row); return row; },
-      count: async args => cases.filter(row => row.guildId === args.where.guildId && row.targetUserId === args.where.targetUserId && (!args.where.action || row.action === args.where.action)).length,
-      findMany: async args => cases.filter(row => row.guildId === args.where.guildId && row.targetUserId === args.where.targetUserId && (!args.where.action || row.action === args.where.action))
-        .sort((a, b) => b.createdAt - a.createdAt).slice(0, args.take),
+      count: async args => cases.filter(row => row.guildId === args.where.guildId && (!args.where.targetUserId || row.targetUserId === args.where.targetUserId) && (!args.where.action || row.action === args.where.action)).length,
+      findMany: async args => cases.filter(row => row.guildId === args.where.guildId && (!args.where.targetUserId || row.targetUserId === args.where.targetUserId) && (!args.where.action || row.action === args.where.action))
+        .sort((a, b) => b.createdAt - a.createdAt).slice(args.skip ?? 0, (args.skip ?? 0) + args.take),
       findFirst: async args => cases.find(row => row.guildId === args.where.guildId && row.id === args.where.id) ?? null,
       updateMany: async args => { const row = cases.find(row => row.guildId === args.where.guildId && row.id === args.where.id); if (row) Object.assign(row, args.data); return { count: row ? 1 : 0 }; },
     },
@@ -100,6 +100,22 @@ test('moderation configuration and warning history are isolated by guild', async
   await f.service.removeConfig('guild-a');
   assert.equal(await f.service.getConfig('guild-a'), null);
   assert.equal((await f.service.warnings('guild-a', 'member')).total, 2);
+});
+
+test('guild case listing is scoped, filtered, and paginated', async () => {
+  const f = serviceFixture();
+  await f.service.configure('guild-a', 'log-a');
+  await f.service.configure('guild-b', 'log-b');
+  for (let index = 0; index < 21; index++) await f.service.addWarning('guild-a', 'member-a', 'mod', `Reason ${index}`);
+  await f.service.addWarning('guild-b', 'member-b', 'mod', 'Other server');
+  const first = await f.service.listGuildCases('guild-a', { page: 1 });
+  const second = await f.service.listGuildCases('guild-a', { page: 2, memberId: 'member-a', action: 'warn' });
+  assert.equal(first.total, 21);
+  assert.equal(first.records.length, 20);
+  assert.equal(second.total, 21);
+  assert.equal(second.records.length, 1);
+  assert.equal((await f.service.listGuildCases('guild-a', { page: 1, action: 'ban' })).total, 0);
+  assert.equal((await f.service.listGuildCases('guild-b', { page: 1 })).total, 1);
 });
 
 test('administrator configuration validates an embed-capable channel and replies privately', async () => {

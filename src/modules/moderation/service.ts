@@ -86,6 +86,20 @@ export class ModerationService {
 
   warnings(guildId: string, targetUserId: string, limit = 10) { return this.cases(guildId, targetUserId, limit, "warn"); }
 
+  async listGuildCases(guildId: string, filters: { memberId?: string; action?: ModerationAction; page: number }):
+    Promise<{ total: number; records: ModerationCase[] }> {
+    const where = { guildId, ...(filters.memberId ? { targetUserId: filters.memberId } : {}),
+      ...(filters.action ? { action: filters.action } : {}) };
+    return this.storage(guildId, async database => {
+      const [total, records] = await Promise.all([
+        database.moderationCase.count({ where }),
+        database.moderationCase.findMany({ where, orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          skip: (filters.page - 1) * 20, take: 20 }),
+      ]);
+      return { total, records: records as ModerationCase[] };
+    });
+  }
+
   getCase(guildId: string, id: string): Promise<ModerationCase | null> {
     return this.storage(guildId, database => database.moderationCase.findFirst({ where: { guildId, id } })) as Promise<ModerationCase | null>;
   }

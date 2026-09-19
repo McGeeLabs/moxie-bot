@@ -6,13 +6,14 @@ import { guildConfiguration, type GuildConfiguration } from "../core/database/gu
 import { logger } from "../core/logger";
 import { DiscordWebhookDelivery } from "../integrations/webhooks/discordDelivery";
 import { WebhookError } from "../integrations/webhooks/errors";
-import { moderationService, type ModerationService } from "../modules/moderation/service";
+import { moderationService, type ModerationAction, type ModerationService } from "../modules/moderation/service";
 import { moduleDefinitions } from "../modules/definitions";
 import { DiscordOAuth, DiscordOAuthError, isGuildAdministrator, type OAuthGuild } from "./oauth";
 
 type Session = { userId: string; username: string; accessToken: string; csrf: string; expires: number };
 const MAX_SESSIONS = 1000;
 const MAX_FORM_BYTES = 4096;
+const caseActions: ModerationAction[] = ["warn", "timeout", "untimeout", "kick", "ban"];
 
 function nonce() { return randomBytes(32).toString("hex"); }
 function equal(a: string, b: string): boolean {
@@ -61,6 +62,8 @@ async function form(request: IncomingMessage): Promise<URLSearchParams> {
 
 const style = `:root{font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:#e8eaf7;background:#0e1220}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#202b50,#0e1220 60%);min-height:100vh}main{max-width:860px;margin:auto;padding:38px 20px 90px}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:56px}.brand{font-weight:800;font-size:1.55rem;letter-spacing:-.04em;color:inherit;text-decoration:none}.brand:hover,.brand:focus-visible{color:#a9b9ff}.eyebrow{font-size:.7rem;font-weight:700;letter-spacing:.18em;color:#9aa9d7}h1{font-size:clamp(2rem,5vw,3.4rem);letter-spacing:-.05em;margin:0 0 12px}h2{font-size:1.2rem;margin:0 0 12px}p{line-height:1.6;color:#adb8d1}a{color:#a9b9ff}a.button,button{display:inline-block;border:0;border-radius:11px;background:#637bfa;color:white;font-weight:700;padding:11px 16px;text-decoration:none;cursor:pointer}button.secondary{background:#2c3653}.card{background:#1a2136;border:1px solid #35415e;border-radius:18px;padding:24px;margin:20px 0;box-shadow:0 20px 55px #0002}.row{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;border-top:1px solid #35415e;padding:15px 0}.row:first-of-type{border-top:0}.muted{font-size:.85rem;color:#9aa7c4}.badge{border-radius:99px;padding:4px 9px;font-size:.7rem;font-weight:700;background:#34436d;color:#d1dcff}.badge.off{background:#393d4d;color:#b8bfce}select{background:#10172a;color:#e8eaf7;border:1px solid #465576;border-radius:9px;padding:10px;max-width:100%}form.inline{display:inline-flex;align-items:center;gap:10px}nav{margin-bottom:25px}.alert{background:#2d2535;border-left:3px solid #ffba69;padding:13px 16px;border-radius:8px}`;
 
+const caseStyle = `input{background:#10172a;color:#e8eaf7;border:1px solid #465576;border-radius:9px;padding:10px;max-width:100%}.filters{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.filters label{display:grid;gap:6px;color:#adb8d1;font-size:.85rem}.case-list{display:grid;gap:12px}.case-item{border:1px solid #35415e;border-radius:12px;padding:16px}.case-item p{margin:8px 0}.case-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.case-id{font-family:ui-monospace,SFMono-Regular,monospace;overflow-wrap:anywhere}.case-detail{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}.case-detail dt{color:#9aa7c4;font-size:.8rem}.case-detail dd{margin:5px 0 0;overflow-wrap:anywhere}.pager{display:flex;gap:18px;align-items:center;margin-top:20px}`;
+
 export class DashboardServer {
   private server?: Server;
   private readonly oauthStates = new Map<string, number>();
@@ -108,10 +111,11 @@ export class DashboardServer {
 
   private async route(request: IncomingMessage, response: ServerResponse) {
     this.cleanup();
-    const path = new URL(request.url || "/", this.config.baseUrl).pathname;
+    const url = new URL(request.url || "/", this.config.baseUrl);
+    const path = url.pathname;
     const method = request.method ?? "GET";
     if (method === "GET" && path === "/style.css") {
-      headers(response, "text/css; charset=utf-8"); response.end(style); return;
+      headers(response, "text/css; charset=utf-8"); response.end(style + caseStyle); return;
     }
     if (method === "GET" && path === "/login") {
       if (this.oauthStates.size >= MAX_SESSIONS) { page(response, "Busy", "<p>Sign-in is busy. Try again shortly.</p>", 503); return; }
@@ -188,6 +192,49 @@ export class DashboardServer {
       const cards = guilds.length ? guilds.map((guild: OAuthGuild) => `<div class=card><h2>${escape(guild.name)}</h2><p class=muted>Administrator access</p><a class=button href="/guild/${guild.id}">Manage server</a></div>`).join("") : "<div class=card><p>No shared servers with Administrator access were found.</p></div>";
       page(response, "Your servers", `<h1>Your servers</h1><p>Signed in as ${escape(session.username)}. Choose a server where Moxie is installed.</p>${cards}<form method=post action=/logout><input type=hidden name=csrf value="${session.csrf}"><button class=secondary>Sign out</button></form>`); return;
     }
+    const casesMatch = /^\/guild\/([0-9]{17,20})\/cases(?:\/([0-9a-fA-F-]{36}))?$/.exec(path);
+    if (casesMatch) {
+      const guild = await this.authorizedGuild(session, casesMatch[1]);
+      if (!guild) { page(response, "Forbidden", "<p>You cannot administer this server through Moxie.</p>", 403); return; }
+      const base = `/guild/${guild.id}/cases`;
+      if (casesMatch[2]) {
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(casesMatch[2])) {
+          page(response, "Not found", "<p>Case not found.</p>", 404); return;
+        }
+        const record = await this.moderation.getCase(guild.id, casesMatch[2]);
+        if (!record) { page(response, "Not found", "<p>Case not found.</p>", 404); return; }
+        const details = [
+          ["Action", record.action], ["Member ID", record.targetUserId], ["Moderator ID", record.moderatorUserId],
+          ["Created", record.createdAt.toISOString()], ["Duration", record.durationMinutes === null ? "—" : `${record.durationMinutes} minutes`],
+          ["Reason updated", record.reasonUpdatedAt?.toISOString() ?? "Never"],
+          ["Reason updated by", record.reasonUpdatedById ?? "—"],
+        ].map(([label, value]) => `<div><dt>${escape(label!)}</dt><dd>${escape(value!)}</dd></div>`).join("");
+        page(response, "Moderation case", `<nav><a href="${base}">← All cases</a></nav><h1>Moderation case</h1><section class=card><p class="muted case-id">${escape(record.id)}</p><dl class=case-detail>${details}</dl><h2>Reason</h2><p>${escape(record.reason)}</p></section>`); return;
+      }
+      const memberId = url.searchParams.get("member")?.trim() ?? "";
+      const action = url.searchParams.get("action") ?? "";
+      const pageValue = url.searchParams.get("page") ?? "1";
+      if ((memberId && !/^\d{17,20}$/.test(memberId)) || (action && !caseActions.includes(action as ModerationAction)) ||
+        !/^[1-9]\d{0,2}$/.test(pageValue)) {
+        page(response, "Invalid filters", "<p>Enter a valid Discord member ID, action, and page number.</p>", 400); return;
+      }
+      const currentPage = Number(pageValue);
+      const { total, records } = await this.moderation.listGuildCases(guild.id, {
+        ...(memberId ? { memberId } : {}), ...(action ? { action: action as ModerationAction } : {}), page: currentPage,
+      });
+      const listUrl = (number: number) => {
+        const query = new URLSearchParams();
+        if (memberId) query.set("member", memberId);
+        if (action) query.set("action", action);
+        if (number > 1) query.set("page", String(number));
+        return `${base}${query.size ? `?${query}` : ""}`;
+      };
+      const actionOptions = caseActions.map(value => `<option value="${value}"${value === action ? " selected" : ""}>${value}</option>`).join("");
+      const rows = records.length ? records.map(record => `<article class=case-item><div class=case-meta><span class=badge>${escape(record.action)}</span><span class=muted>${escape(record.createdAt.toISOString())}</span></div><p>Member <span class=case-id>${escape(record.targetUserId)}</span> · Moderator <span class=case-id>${escape(record.moderatorUserId)}</span></p><p>${escape(record.reason.length > 180 ? `${record.reason.slice(0, 180)}…` : record.reason)}</p><a href="${base}/${encodeURIComponent(record.id)}">View case</a></article>`).join("") : "<p>No cases match these filters.</p>";
+      const pages = Math.ceil(total / 20);
+      const pager = `<div class=pager>${currentPage > 1 ? `<a href="${escape(listUrl(currentPage - 1))}">← Previous</a>` : ""}<span class=muted>Page ${currentPage} of ${Math.max(1, pages)}</span>${currentPage < pages ? `<a href="${escape(listUrl(currentPage + 1))}">Next →</a>` : ""}</div>`;
+      page(response, "Moderation cases", `<nav><a href="/guild/${guild.id}">← ${escape(guild.name)} settings</a></nav><h1>Moderation cases</h1><p>${total} case${total === 1 ? "" : "s"} in this server${memberId || action ? " matching these filters" : ""}.</p><section class=card><form class=filters method=get action="${base}"><label>Member ID<input name=member inputmode=numeric maxlength=20 value="${escape(memberId)}" placeholder="Discord user ID"></label><label>Action<select name=action><option value="">All actions</option>${actionOptions}</select></label><button>Filter</button><a href="${base}">Clear</a></form></section><section class="card case-list">${rows}</section>${pager}`); return;
+    }
     const match = /^\/guild\/([0-9]{17,20})$/.exec(path);
     if (!match) { page(response, "Not found", "<p>Page not found.</p>", 404); return; }
     const guild = await this.authorizedGuild(session, match[1]);
@@ -199,7 +246,7 @@ export class DashboardServer {
       channel.permissionsFor(member)?.has([PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks]));
     const moduleRows = modules.map(module => `<div class=row><div><strong>${escape(module.name)}</strong> <span class="badge ${module.enabled ? "" : "off"}">${module.enabled ? "Enabled" : "Disabled"}</span>${module.required ? " <span class=muted>Required</span>" : ""}</div>${module.required ? "" : `<form class=inline method=post action="/guild/${guild.id}/module"><input type=hidden name=csrf value="${session.csrf}"><input type=hidden name=name value="${escape(module.name)}"><input type=hidden name=enabled value="${module.enabled ? "false" : "true"}"><button class=secondary>${module.enabled ? "Disable" : "Enable"}</button></form>`}</div>`).join("");
     const options = choices.map(channel => `<option value="${channel!.id}"${channel!.id === moderation?.logChannelId ? " selected" : ""}>#${escape(channel!.name)}</option>`).join("");
-    page(response, guild.name, `<nav><a href=/>← All servers</a></nav><h1>${escape(guild.name)}</h1><p>Changes apply to this server immediately.</p><section class=card><h2>Modules</h2>${moduleRows}</section><section class=card><h2>Moderation log channel</h2><p>Audit cards are sent here. Moxie needs View Channel, Send Messages, and Embed Links.</p><form class=inline method=post action="/guild/${guild.id}/log-channel"><input type=hidden name=csrf value="${session.csrf}"><select name=channel><option value=remove>Not configured</option>${options}</select><button>Save channel</button></form>${moderation && !choices.some(channel => channel?.id === moderation.logChannelId) ? "<p class=alert>The saved channel is unavailable to Moxie. Choose another channel.</p>" : ""}</section>`);
+    page(response, guild.name, `<nav><a href=/>← All servers</a></nav><h1>${escape(guild.name)}</h1><p>Changes apply to this server immediately.</p><section class=card><h2>Moderation cases</h2><p>Browse recorded warnings, timeouts, kicks, and bans for this server.</p><a class=button href="/guild/${guild.id}/cases">View cases</a></section><section class=card><h2>Modules</h2>${moduleRows}</section><section class=card><h2>Moderation log channel</h2><p>Audit cards are sent here. Moxie needs View Channel, Send Messages, and Embed Links.</p><form class=inline method=post action="/guild/${guild.id}/log-channel"><input type=hidden name=csrf value="${session.csrf}"><select name=channel><option value=remove>Not configured</option>${options}</select><button>Save channel</button></form>${moderation && !choices.some(channel => channel?.id === moderation.logChannelId) ? "<p class=alert>The saved channel is unavailable to Moxie. Choose another channel.</p>" : ""}</section>`);
   }
 
   async start() {

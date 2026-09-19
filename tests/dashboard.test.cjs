@@ -27,15 +27,22 @@ function fixture() {
     channels: { fetch: async () => new Map([[channelId, channel]]) } };
   const client = { guilds: { cache: new Map([[guildId, guild]]), fetch: async () => guild } };
   const changes = [];
+  const cases = [];
   const configuration = {
     listModules: async () => [{ name: 'admin', enabled: true, required: true }, { name: 'moderation', enabled: false, required: false }],
     setEnabled: async (...args) => changes.push(['module', ...args]),
   };
   const moderation = { getConfig: async () => null, configure: async (...args) => changes.push(['channel', ...args]),
-    removeConfig: async (...args) => changes.push(['remove', ...args]) };
+    removeConfig: async (...args) => changes.push(['remove', ...args]),
+    listGuildCases: async (id, filters) => {
+      const matching = cases.filter(row => row.guildId === id && (!filters.memberId || row.targetUserId === filters.memberId) &&
+        (!filters.action || row.action === filters.action));
+      return { total: matching.length, records: matching.slice((filters.page - 1) * 20, filters.page * 20) };
+    },
+    getCase: async (id, caseId) => cases.find(row => row.guildId === id && row.id === caseId) ?? null };
   const destination = { validateDestination: async (...args) => changes.push(['validate', ...args]) };
   const dashboard = new DashboardServer(config, client, oauth, configuration, moderation, destination);
-  return { dashboard, changes, revokeAdministrator: () => { administrator = false; }, revokeGuildAccess: () => { guildAccess = false; } };
+  return { dashboard, changes, cases, revokeAdministrator: () => { administrator = false; }, revokeGuildAccess: () => { guildAccess = false; } };
 }
 
 function cookieValue(response, name) {
@@ -135,5 +142,49 @@ test('dashboard requires matching OAuth state and protects settings with fresh a
     assert.equal(f.changes.length, 3);
     f.revokeGuildAccess();
     assert.equal((await fetch(`${base}/guild/${guildId}`, { headers: { cookie: `moxie_session=${session}` } })).status, 403);
+  } finally { await f.dashboard.stop(); }
+});
+
+test('dashboard case pages filter, paginate, escape reasons, and enforce guild access', async () => {
+  const f = fixture();
+  const firstId = '00000000-0000-4000-8000-000000000001';
+  for (let index = 1; index <= 21; index++) f.cases.push({
+    id: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`, guildId,
+    targetUserId: userId, moderatorUserId: '523456789012345678', action: 'warn',
+    reason: index === 1 ? '<script>alert("bad")</script>' : `Reason ${index}`,
+    durationMinutes: null, createdAt: new Date('2026-09-19T12:00:00Z'), reasonUpdatedAt: null, reasonUpdatedById: null,
+  });
+  f.cases.push({ ...f.cases[0], id: '00000000-0000-4000-8000-000000000099', guildId: '999999999999999999', action: 'ban' });
+  await f.dashboard.start();
+  const base = `http://127.0.0.1:${f.dashboard.server.address().port}`;
+  try {
+    const session = await login(base);
+    const get = path => fetch(`${base}${path}`, { headers: { cookie: `moxie_session=${session}` } });
+    const guildPage = await (await get(`/guild/${guildId}`)).text();
+    assert.match(guildPage, new RegExp(`/guild/${guildId}/cases`));
+    const first = await get(`/guild/${guildId}/cases`);
+    const firstHtml = await first.text();
+    assert.equal(first.status, 200);
+    assert.match(firstHtml, /21 cases in this server/);
+    assert.equal((firstHtml.match(/class=case-item/g) ?? []).length, 20);
+    assert.match(firstHtml, /Next →/);
+    assert.doesNotMatch(firstHtml, /<script>/);
+    assert.match(firstHtml, /&lt;script&gt;/);
+    const second = await get(`/guild/${guildId}/cases?page=2`);
+    assert.equal((await second.text()).match(/class=case-item/g)?.length, 1);
+    const filtered = await get(`/guild/${guildId}/cases?member=${userId}&action=ban`);
+    assert.match(await filtered.text(), /No cases match these filters/);
+    assert.equal((await get(`/guild/${guildId}/cases?member=invalid`)).status, 400);
+    assert.equal((await get(`/guild/${guildId}/cases?action=other`)).status, 400);
+    const detail = await get(`/guild/${guildId}/cases/${firstId}`);
+    const detailHtml = await detail.text();
+    assert.equal(detail.status, 200);
+    assert.match(detailHtml, /Member ID/);
+    assert.match(detailHtml, /&lt;script&gt;/);
+    assert.doesNotMatch(detailHtml, /<script>/);
+    assert.equal((await get(`/guild/${guildId}/cases/00000000-0000-4000-8000-000000000099`)).status, 404);
+    f.revokeAdministrator();
+    assert.equal((await get(`/guild/${guildId}/cases`)).status, 403);
+    assert.equal((await get(`/guild/${guildId}/cases/${firstId}`)).status, 403);
   } finally { await f.dashboard.stop(); }
 });

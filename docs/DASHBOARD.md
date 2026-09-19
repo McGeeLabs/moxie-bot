@@ -1,10 +1,12 @@
 # First admin dashboard
 
-The first dashboard slice provides Discord sign-in, a server picker, per-guild module toggles, and moderation log-channel setup. It uses the existing bot process and database. It is **disabled by default**, requires no migration, and does not open a host port in Docker. The Discord commands remain available.
+The dashboard provides Discord sign-in, a server picker, per-guild module toggles, moderation log-channel setup, and read-only moderation case browsing. It uses the existing bot process and database. It is **disabled by default**, requires no migration, and does not open a host port in Docker. The Discord commands remain available.
 
 The dashboard requests Discord OAuth scopes `identify` and `guilds`. On every selected-server page and setting change, it checks both the user's current OAuth guild list for Administrator permission and the bot's current guild membership data for that user's Administrator permission. POST forms require a session-specific CSRF token and the configured browser origin. Responses use `Referrer-Policy: same-origin` so browser form posts send the real `Origin` while referrers are withheld from other sites. Sessions and Discord access tokens stay in process memory for at most one hour and are lost on restart. The OAuth client secret stays in the environment file and must not be committed.
 
-This flow follows [Discord's OAuth2 authorization-code and state guidance](https://discord.com/developers/docs/topics/oauth2). The dashboard does not currently include a case viewer, custom-command editor, or reaction-role editor.
+This flow follows [Discord's OAuth2 authorization-code and state guidance](https://discord.com/developers/docs/topics/oauth2). The dashboard does not currently include a custom-command editor or reaction-role editor.
+
+The server settings page links to **Moderation cases**. The case list shows the newest 20 records per page; filter by a Discord member ID and/or action, then open a case for its full reason, moderator, duration, and reason-correction history. Cases are read-only in the dashboard, and every list and detail request rechecks guild Administrator access. Case IDs are scoped to the selected guild. No migration or Discord command redeployment is needed for this page.
 
 ## Local development
 
@@ -52,4 +54,4 @@ If the dashboard does not start, check the safe startup log and the exact `DASHB
 
 Setting forms save the change and redirect back to the server page. That page rechecks current Discord Administrator access. Moxie retries one short Discord OAuth rate limit during that check; a remaining request failure logs the error type and upstream HTTP status without logging OAuth tokens.
 
-The next dashboard slice can add read-only moderation case browsing. Custom commands and reaction-role editing will follow their respective bot modules.
+Custom commands and reaction-role editing will follow their respective bot modules.
