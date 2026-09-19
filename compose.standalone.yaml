@@ -15,6 +15,11 @@ services:
       WEBHOOK_ENABLED: ${WEBHOOK_ENABLED:-false}
       WEBHOOK_HOST: 0.0.0.0
       WEBHOOK_PORT: "3000"
+      DASHBOARD_ENABLED: ${DASHBOARD_ENABLED:-false}
+      DASHBOARD_CLIENT_SECRET: ${DASHBOARD_CLIENT_SECRET:-}
+      DASHBOARD_BASE_URL: ${DASHBOARD_BASE_URL:-}
+      DASHBOARD_HOST: 0.0.0.0
+      DASHBOARD_PORT: "3005"
     init: true
     restart: unless-stopped
     stop_grace_period: 30s

@@ -1,6 +1,6 @@
 # Verify a VPS deployment
 
-These tools cover two follow-up roadmap items: saved configuration across restarts and container startup/shutdown smoke checks. They are ready for forge01; actual execution on the VPS remains a user verification step. No container restart was performed from the Windows workspace.
+These tools cover saved configuration across restarts and container startup/shutdown smoke checks. The user confirmed the forge01 deployment checks passed. No container restart was performed from the Windows workspace.
 
 ## Deployment checks
 
@@ -31,7 +31,7 @@ This briefly stops the bot, checks exit code 0, starts it again, waits up to 60 
 
 Snapshots are temporary files with private permissions. They contain counts and a combined SHA-256 fingerprint, not settings, connection strings, tokens, or individual token hashes. The fingerprint includes guild identities, module flags, webhook route/destination/provider/token-hash data, Valheim host/ports/channel data, moderation destinations, and moderation cases. It excludes Valheim's operational monitoring state and check timestamps, which legitimately change while monitoring runs. Creating or correcting a moderation case during the restart test will cause a mismatch, so avoid moderation commands during that brief check.
 
-The restart script supports the current existing-PostgreSQL forge01 setup, not the alternate standalone database file. Local Bash syntax checks and application tests pass; actual Docker-host checks remain pending until the user runs the script.
+The restart script supports the current existing-PostgreSQL forge01 setup, not the alternate standalone database file. Local Bash syntax checks and application tests pass; the user confirmed the Docker-host checks passed on forge01.
 
 ## Manual persistence verification
 

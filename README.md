@@ -200,15 +200,13 @@ Moxie v0.3.2
 
 ## 🌐 Web Dashboard
 
-A web-based administration dashboard is planned for future releases.
+A first web dashboard slice is implemented but disabled by default. Discord OAuth sign-in, current Administrator checks for each selected guild, module toggles, and moderation log-channel setup share the bot's existing services and PostgreSQL data. See the [dashboard setup guide](docs/DASHBOARD.md). Later dashboard pages remain planned.
 
-The dashboard will use Discord OAuth and provide an interface for managing:
+The planned dashboard expansion will provide an interface for managing:
 
-* Guild configuration
-* Enabled modules
 * Custom commands
 * Reaction roles
-* Moderation settings
+* Moderation case browsing and deeper settings
 * Ticket configuration
 * Leveling settings
 * Connected integrations
@@ -216,7 +214,7 @@ The dashboard will use Discord OAuth and provide an interface for managing:
 * Webhooks
 * Permissions
 
-The dashboard and Discord commands will share the same application logic and database.
+The dashboard and Discord commands share the same application logic and database. This initial slice runs in the bot process with Node's HTTP server; it adds no separate frontend service or migration.
 
 ---
 
@@ -230,11 +228,11 @@ The dashboard and Discord commands will share the same application logic and dat
 * **PostgreSQL** (PostgreSQL 17 verified)
 * **Prisma ORM v7**
 * **Generic incoming webhook API** (optional listener and per-guild routing)
+* **Discord OAuth admin dashboard** (optional built-in HTTP listener)
 
 ### Planned
 
-* **Next.js**
-* **Discord OAuth**
+* **Separate frontend framework**, if future dashboard complexity calls for one
 * **Additional REST API and native service adapters**
 
 ---
@@ -469,7 +467,7 @@ Members can use `/valheim status` to post the existing status card in their chan
 
 Scheduled monitoring is now implemented: checks every 60 seconds, three failures before an unavailable alert, one recovery alert, and a saved baseline to avoid startup spam. Existing enabled configurations use their saved channel automatically. `/moxie health` includes scheduler diagnostics. Follow the [monitoring update guide](docs/VALHEIM_MONITORING.md) for the new migration and VPS rollout.
 
-Two accompanying operations tools cover saved configuration across restart and container smoke checks: see [operations verification](docs/OPERATIONS.md). `bash scripts/verify-deployment.sh` runs checks; adding `--restart` also tests graceful shutdown and persistence with brief bot downtime. Actual VPS execution remains pending.
+Two accompanying operations tools cover saved configuration across restart and container smoke checks: see [operations verification](docs/OPERATIONS.md). `bash scripts/verify-deployment.sh` runs checks; adding `--restart` also tests graceful shutdown and persistence with brief bot downtime. The user confirmed the VPS checks passed.
 
 Administrator-only `/moxie valheim configure`, `config`, `status`, and `remove` commands support one saved server per guild. The `valheim` module starts disabled; status checks return a private card with reported players, query latency, version, and connection details. A failed query is shown as unavailable rather than declaring the server offline. The Nitrado endpoint on UDP port 10471 is verified both locally and through a live status card from forge01 in Discord. Scheduled notifications are implemented; see the monitoring update guide above. Follow the [Valheim setup guide](docs/VALHEIM.md) for migration, deployment, and the supplied server's exact settings.
 
@@ -575,7 +573,7 @@ Docker deployment files are prepared for Linux/VPS hosting and Docker Desktop wi
 * `compose.standalone.yaml`: a fresh installation with PostgreSQL 17 and a persistent volume.
 * `.env.docker.example`: a separate Docker-host environment template, keeping the local SSH-tunnel `.env` independent.
 
-Both Compose files have passed validation with placeholder credentials. GitHub Actions is configured to build and smoke-test the Linux images. The user confirmed Moxie is running and working on forge01. Local container builds remain unavailable because Docker is not installed in the Windows workspace. Direct Kuma delivery over Docker networking is confirmed; detailed restart/shutdown checks remain to be confirmed.
+Both Compose files have passed validation with placeholder credentials. GitHub Actions is configured to build and smoke-test the Linux images. The user confirmed Moxie is running and working on forge01. Local container builds remain unavailable because Docker is not installed in the Windows workspace. Direct Kuma delivery over Docker networking and restart/shutdown checks are confirmed.
 
 Start with the [Docker deployment guide](docs/DEPLOYMENT.md). It covers your `mcgee-postgres` network, environment setup, explicit migrations, database verification, startup, updates, and shutdown. An optional `compose.webhooks.yaml` override publishes the webhook listener only on host loopback; see [webhook deployment](docs/WEBHOOKS.md). Use the container hostname on the VPS rather than `127.0.0.1:5433`.
 

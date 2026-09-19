@@ -139,7 +139,7 @@ The roadmap is intentionally flexible and may evolve as features are implemented
 - [x] Send modern audit cards while suppressing mentions; keep successful actions when log delivery fails
 - [x] Include moderation settings and warning history in restart persistence fingerprints
 - [x] Prisma schema validation, TypeScript build, and all 80 automated tests pass
-- [ ] Apply the migration, deploy commands, configure the log channel, and verify all four commands on forge01
+- [x] User confirmed the moderation deployment and live checks passed on forge01
 
 ### Milestone 10 — Unified moderation cases
 
@@ -150,16 +150,16 @@ The roadmap is intentionally flexible and may evolve as features are implemented
 - [x] Keep departed-member history accessible and prevent failed Discord actions from creating false cases
 - [x] Include all case types and reason corrections in persistence fingerprints
 - [x] Prisma schema validation, TypeScript build, and all 85 automated tests pass
-- [ ] Back up PostgreSQL, apply the case migration, register commands, and verify the new actions on forge01
+- [x] User confirmed the unified case deployment and live checks passed on forge01
 
 ### Remaining deployment verification
 
 1. Verify enabled `/about`, `/ping`, and saved settings across a bot restart in Discord. Module listing and disable/re-enable controls are verified live. Guild sync, persistent toggles, admin controls, PostgreSQL/Prisma, and database health are implemented.
-2. Complete container smoke checks and restart/shutdown verification. The user confirmed Moxie is deployed and working on forge01.
+2. Container smoke checks and restart/shutdown verification passed on forge01, as confirmed by the user.
 3. Verify webhooks in containers. Generic webhook delivery is confirmed live in Discord; the native Kuma adapter passes automated and PostgreSQL/HTTP checks.
-4. Deploy the implemented Valheim scheduler and run its live monitoring and container restart/persistence checks. On-demand Valheim status is confirmed live.
+4. Verify Valheim's scheduled unavailable/recovery notifications during a real transition. On-demand Valheim status and the container restart/persistence checks are confirmed live.
 
-These priorities come before the later community features listed below. PostgreSQL, guild configuration, generic webhooks, and the native Kuma push adapter are implemented. Generic webhook delivery and a native Kuma test notification are confirmed live in Discord. A real Kuma DOWN alert is also confirmed. VPS deployment is confirmed by the user. Direct Kuma test delivery over Docker networking is confirmed. Valheim configuration and on-demand queries are verified locally and live from forge01 in Discord. New card formatting on the VPS, Kuma UP recovery, detailed container checks, Valheim persistence across restart, and live scheduled Valheim alert verification remain pending.
+These priorities come before the later community features listed below. PostgreSQL, guild configuration, generic webhooks, and the native Kuma push adapter are implemented. Generic webhook delivery and a native Kuma test notification are confirmed live in Discord. A real Kuma DOWN alert is also confirmed. VPS deployment and container restart/persistence checks are confirmed by the user. Direct Kuma test delivery over Docker networking is confirmed. Valheim configuration and on-demand queries are verified locally and live from forge01 in Discord. Kuma UP recovery and live scheduled Valheim alert verification remain pending.
 
 **⚠️ Stability Notice**: Until Phase 1 is complete, breaking changes may occur (schema changes, command restructures, API modifications). For production deployments, wait until Phase 2 is stable. Check release notes when updating.
 
@@ -295,19 +295,21 @@ Support-style ticket system for moderation and user inquiries.
 
 **Estimated effort**: 3-4 weeks
 
-User-friendly web interface for bot management, reducing CLI/code dependency.
+User-friendly web interface for bot management, reducing CLI/code dependency. The first small slice runs within the bot process and shares its services; larger management pages can be added as needed.
 
-- [ ] Discord OAuth authentication
-- [ ] Guild selection & permission verification
+- [x] Discord OAuth authorization-code sign-in with state, secure session cookie, and short-lived sessions
+- [x] Guild selection with OAuth Administrator claims and a fresh bot-side member permission check
 - [ ] Custom command management UI (create, edit, delete)
 - [ ] Reaction role UI (visual mapping builder)
 - [ ] Moderation log viewer with filters
-- [ ] Feature toggles per guild (enable/disable phases)
+- [x] Feature toggles per guild (enable/disable modules)
+- [x] Per-guild moderation log-channel setup and removal
+- [ ] Verify dashboard OAuth and settings on a local test callback, then deploy behind HTTPS on forge01
 - [ ] Basic role reward configuration
 
-**Tech**: Next.js (planned), React, TypeScript
+**Tech**: Current slice uses TypeScript and Node's built-in HTTP server in the bot process. Evaluate a separate frontend framework only if later dashboard complexity warrants it.
 
-**Depends on**: Phase 2+
+**Depends on**: Existing guild configuration and moderation services. Later custom-command/reaction-role pages depend on those modules.
 
 ---
 
@@ -352,12 +354,12 @@ Phase 1 (Core Platform) ← REQUIRED FOR ALL BELOW
     ├→ Phase 6 (Ticket System)
     └→ Phase 8 (Automation & MCP)
         ↓
-    Phase 7 (Web Dashboard) ← Can start after Phase 2
+    Phase 7 (Web Dashboard) ← First configuration slice implemented; later pages follow their modules
 ```
 
 **Key Blockers**:
 - Phase 1 **must** complete before feature development
-- Phase 7 dashboard is most useful after Phase 2+ are implemented
+- Later dashboard pages depend on their corresponding bot modules; the existing configuration pages are already useful
 
 ---
 
