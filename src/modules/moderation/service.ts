@@ -52,7 +52,7 @@ export class ModerationService {
 
   async requireConfig(guildId: string) {
     const config = await this.getConfig(guildId);
-    if (!config) throw new ModerationError("No moderation log channel is configured. An administrator can set one with /moxie moderation configure.");
+    if (!config) throw new ModerationError("No moderation log channel is configured. An administrator can set one with /moderation configure.");
     return config;
   }
 

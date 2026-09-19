@@ -4,9 +4,9 @@ const { MessageFlags } = require('discord.js');
 const { CustomCommandService, CustomCommandError } = require('../dist/modules/customCommands/service');
 const memberCommand = require('../dist/modules/customCommands/cmd');
 const adminCommand = require('../dist/modules/customCommands/admin');
-const { data: moxieData } = require('../dist/modules/admin/moxie');
 const { execute: dispatch } = require('../dist/core/events/interactionCreate');
 const { commands } = require('../dist/modules');
+const { guildCommandDefinitions, syncGuildCommands } = require('../dist/modules/customCommands/registration');
 
 function fixture() {
   const rows = new Map();
@@ -36,6 +36,8 @@ function fixture() {
 function interaction(subcommand, strings = {}) {
   const calls = [];
   return { calls, guildId: 'guild-a', user: { id: 'admin-a' }, deferred: true,
+    client: { commands: new Map(commands.map(command => [command.data.name, command])) },
+    guild: { id: 'guild-a', commands: { set: async () => {} } },
     options: { getSubcommand: () => subcommand, getString: name => strings[name] ?? null },
     deferReply: async payload => calls.push(['defer', payload]),
     editReply: async payload => calls.push(['edit', payload]),
@@ -74,28 +76,66 @@ test('member command suppresses mentions and admin responses stay private', asyn
   await adminCommand.execute(create, f.service);
   assert.equal(create.calls[0][1].flags, MessageFlags.Ephemeral);
   assert.match(create.calls[1][1].content, /created/);
-  const run = interaction('run', { name: 'hello' });
-  await memberCommand.execute(run, f.service);
-  assert.equal(run.calls[0][1].content, '@everyone Welcome!');
-  assert.deepEqual(run.calls[0][1].allowedMentions, { parse: [] });
   const list = interaction('list');
   await memberCommand.execute(list, f.service);
   assert.match(list.calls[0][1].content, /`hello`/);
+  const calls = [];
+  const run = { guildId: 'guild-a', commandName: 'hello', isChatInputCommand: () => true,
+    client: { commands: new Map(commands.map(command => [command.data.name, command])) },
+    deferReply: async () => calls.push(['defer']), editReply: async payload => calls.push(['edit', payload]) };
+  await dispatch(run, { isEnabled: async () => true }, f.service);
+  assert.equal(calls[1][1].content, '@everyone Welcome!');
+  assert.deepEqual(calls[1][1].allowedMentions, { parse: [] });
   const remove = interaction('delete', { name: 'hello' });
   await adminCommand.execute(remove, f.service);
   assert.match(remove.calls[1][1].content, /deleted/);
   assert.equal(memberCommand.data.toJSON().dm_permission, false);
-  const group = moxieData.toJSON().options.find(option => option.name === 'command');
-  assert.deepEqual(group.options.map(option => option.name), ['add', 'edit', 'delete', 'list']);
+  const management = commands.find(command => command.data.name === 'command').data.toJSON();
+  assert.deepEqual(management.options.map(option => option.name), ['add', 'edit', 'delete', 'list', 'sync']);
 });
 
 test('disabled customCommands module blocks member execution', async () => {
   let ran = false;
   const calls = [];
-  const mock = { commandName: 'cmd', guildId: 'guild-a', isChatInputCommand: () => true,
+  const mock = { commandName: 'commands', guildId: 'guild-a', isChatInputCommand: () => true,
     client: { commands: new Map(commands.map(command => [command.data.name, { ...command, execute: async () => { ran = true; } }])) },
     deferReply: async value => calls.push(['defer', value]), editReply: async value => calls.push(['edit', value]) };
   await dispatch(mock, { isEnabled: async () => false });
   assert.equal(ran, false);
   assert.match(calls[1][1].content, /customCommands.*disabled/);
+});
+
+test('saved names register as direct guild slash commands alongside built-ins', async () => {
+  const f = fixture();
+  await f.service.add('guild-a', 'rules', 'Read the rules', 'admin-a');
+  const definitions = await guildCommandDefinitions('guild-a', f.service);
+  const direct = definitions.find(command => command.name === 'rules');
+  assert.ok(direct);
+  assert.equal(direct.type, 1);
+  assert.equal(direct.options?.length ?? 0, 0);
+  assert.ok(definitions.some(command => command.name === 'health'));
+  assert.ok(!definitions.some(command => command.name === 'moxie' || command.name === 'cmd'));
+  let registered;
+  await syncGuildCommands({ id: 'guild-a', commands: { set: async value => { registered = value; } } }, f.service);
+  assert.equal(registered.length, definitions.length);
+});
+
+test('built-in names cannot be replaced by a saved response', async () => {
+  const f = fixture();
+  const add = interaction('add', { name: 'ping', response: 'Not really pong' });
+  await adminCommand.execute(add, f.service);
+  assert.match(add.calls.at(-1)[1].content, /reserved/);
+  assert.equal(await f.service.get('guild-a', 'ping'), null);
+  f.rows.set('guild-a:health', { guildId: 'guild-a', name: 'health', content: 'bad' });
+  await assert.rejects(guildCommandDefinitions('guild-a', f.service), /conflicts/);
+});
+
+test('direct saved commands honor the per-guild module switch', async () => {
+  const f = fixture();
+  await f.service.add('guild-a', 'rules', 'Read the rules', 'admin-a');
+  const calls = [];
+  await dispatch({ guildId: 'guild-a', commandName: 'rules', isChatInputCommand: () => true,
+    client: { commands: new Map() }, deferReply: async () => calls.push('defer'),
+    editReply: async value => calls.push(value) }, { isEnabled: async () => false }, f.service);
+  assert.match(calls[1].content, /disabled/);
 });

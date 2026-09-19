@@ -45,9 +45,9 @@ Place Moxie's role above every role it should be allowed to moderate. Give the r
 Run these commands as a server administrator:
 
 ```text
-/moxie moderation configure channel:#moderation-log
-/moxie module name:moderation enabled:true
-/moxie moderation config
+/moderation configure channel:#moderation-log
+/module name:moderation enabled:true
+/moderation config
 ```
 
 Test with a non-administrator moderator who has **Moderate Members**, **Kick Members**, and **Ban Members**:
@@ -64,4 +64,4 @@ Test with a non-administrator moderator who has **Moderate Members**, **Kick Mem
 /ban member:@DisposableTestMember reason:Ban test
 ```
 
-Use disposable accounts for kick/ban testing. Confirm that each response is visible only to the moderator, audit cards appear in the configured channel, combined history survives a bot-container restart, and a moderator cannot target an equal or higher role. Remove the setting with `/moxie moderation remove`; this retains case history but prevents new actions and reason corrections until a channel is configured again.
+Use disposable accounts for kick/ban testing. Confirm that each response is visible only to the moderator, audit cards appear in the configured channel, combined history survives a bot-container restart, and a moderator cannot target an equal or higher role. Remove the setting with `/moderation remove`; this retains case history but prevents new actions and reason corrections until a channel is configured again.

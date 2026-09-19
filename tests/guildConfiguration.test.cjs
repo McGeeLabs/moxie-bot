@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { MessageFlags } = require('discord.js');
 const { GuildConfiguration, ConfigurationUnavailableError } = require('../dist/core/database/guildConfiguration');
 const { execute: dispatch } = require('../dist/core/events/interactionCreate');
-const { execute: admin, data } = require('../dist/modules/admin/moxie');
+const { moduleAdminCommands, adminCommands } = require('../dist/modules/admin/standalone');
 const { execute: ready } = require('../dist/core/events/ready');
 const { execute: about } = require('../dist/modules/status/about');
 
@@ -121,13 +121,13 @@ test('toggleable module commands reject direct messages', async () => {
 });
 
 test('all admin subcommands enforce guild Administrator permissions before reading settings', async () => {
-  for (const subcommand of ['health', 'modules', 'module']) {
+  const guarded = [adminCommands.find(command => command.data.name === 'health'), ...moduleAdminCommands({ listModules: () => assert.fail('must not read'), setEnabled: () => assert.fail('must not change') })];
+  for (const command of guarded) {
     for (const inGuild of [true, false]) {
       const mock = interaction({
         inGuild: () => inGuild, memberPermissions: { has: () => false },
-        options: { getSubcommand: () => subcommand },
       });
-      await admin(mock, { listModules: () => assert.fail('must not read'), setEnabled: () => assert.fail('must not change') });
+      await command.execute(mock);
       assert.equal(mock.calls[0][1].flags, MessageFlags.Ephemeral);
       assert.match(mock.calls[0][1].content, /requires Administrator/);
     }
@@ -137,17 +137,18 @@ test('all admin subcommands enforce guild Administrator permissions before readi
 test('admin listing and toggle update use the interaction guild and ephemeral replies', async () => {
   const database = repository();
   const configuration = new GuildConfiguration(() => database);
+  const [listCommand, toggleCommand] = moduleAdminCommands(configuration);
   const list = interaction();
-  await admin(list, configuration);
+  await listCommand.execute(list);
   assert.match(list.calls[1][1].content, /admin.*required/);
   assert.equal(list.calls[0][1].flags, MessageFlags.Ephemeral);
   const toggle = interaction({ options: { getSubcommand: () => 'module', getString: () => 'status', getBoolean: () => false } });
-  await admin(toggle, configuration);
+  await toggleCommand.execute(toggle);
   assert.equal(await configuration.isEnabled('guild-a', 'status'), false);
   assert.equal(await configuration.isEnabled('guild-b', 'status'), true);
   assert.match(toggle.calls[1][1].content, /disabled/);
   assert.equal(toggle.calls[0][1].flags, MessageFlags.Ephemeral);
-  assert.deepEqual(data.toJSON().options.map(option => option.name), ['health', 'modules', 'module', 'webhook', 'valheim', 'moderation', 'command']);
+  assert.deepEqual(adminCommands.map(command => command.data.name), ['health', 'modules', 'module', 'webhook', 'moderation', 'command']);
 });
 
 test('startup sync attempts every guild even when one registration fails', async () => {

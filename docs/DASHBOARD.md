@@ -22,7 +22,7 @@ The server settings page links to **Moderation cases**. The case list shows the 
    ```
 
 3. Run the existing local bot and PostgreSQL connection, then open `http://localhost:3005/` in a browser. Sign in as a server Administrator. The server picker only shows guilds where both you and Moxie are present.
-4. Try toggling a non-required module and confirm `/moxie modules` reflects the change. Configure a moderation log channel and confirm `/moxie moderation config` shows the same channel. Test that a non-administrator cannot open or change that server's settings.
+4. Try toggling a non-required module and confirm `/modules` reflects the change. Configure a moderation log channel and confirm `/moderation config` shows the same channel. Test that a non-administrator cannot open or change that server's settings.
 
 ## forge01 behind the existing reverse proxy
 

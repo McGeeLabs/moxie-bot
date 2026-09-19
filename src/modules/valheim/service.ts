@@ -68,9 +68,9 @@ export class ValheimService {
   }
 
   async status(guildId: string): Promise<{ config: ValheimConfig; result: ValheimQueryResult }> {
-    if (!await this.configuration.isEnabled(guildId, "valheim")) throw new ValheimError("The valheim module is disabled in this server. Enable it with /moxie module.");
+    if (!await this.configuration.isEnabled(guildId, "valheim")) throw new ValheimError("The valheim module is disabled in this server. Enable it with /module.");
     const config = await this.getConfig(guildId);
-    if (!config) throw new ValheimError("No Valheim server configured. Use /moxie valheim configure first.");
+    if (!config) throw new ValheimError("No Valheim server configured. Use /valheim configure first.");
     const cached = this.cache.get(guildId);
     if (cached && cached.expires > this.now() && JSON.stringify(cached.config) === JSON.stringify(config)) return { config, result: cached.result };
     if (this.pending.has(guildId)) throw new ValheimError("A Valheim check is already running for this server. Try again shortly.");

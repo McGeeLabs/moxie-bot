@@ -19,9 +19,9 @@ Health should show `Webhook API: Listening`. Choose another port from 1–65535 
 As a guild administrator, choose an existing server text channel:
 
 ```text
-/moxie webhook create name:monitor channel:#monitoring
-/moxie module name:webhooks enabled:true
-/moxie webhook list
+/webhook create name:monitor channel:#monitoring
+/module name:webhooks enabled:true
+/webhook list
 ```
 
 Moxie needs View Channel and Send Messages. Guild/channel type and bot permissions are checked during creation and again before sending.
@@ -83,10 +83,10 @@ Logs record outcomes and route/guild/channel IDs, omitting bodies, headers, toke
 All route commands require guild Administrator permission and reply privately:
 
 ```text
-/moxie webhook list
-/moxie webhook rotate name:monitor
-/moxie webhook delete name:monitor
-/moxie module name:webhooks enabled:false
+/webhook list
+/webhook rotate name:monitor
+/webhook delete name:monitor
+/module name:webhooks enabled:false
 ```
 
 Names use 1–40 lowercase letters, digits, underscores, or hyphens and are unique per guild. Creation never replaces a route/token. Listing shows the first 10 routes, oldest first. Rotation shows a new token once and revokes the old token for subsequent checks. Deletion removes a route. Disabling the module retains routes, and admin diagnostics remain available.

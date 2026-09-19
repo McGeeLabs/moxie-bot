@@ -163,14 +163,15 @@ The moderation case system is implemented. Each guild can configure its own audi
 
 Moxie includes built-in health diagnostics and module controls for administrators. Broader service diagnostics are planned.
 
-Available now: `/moxie health`, `/moxie modules`, and `/moxie module`. Additional planned commands include:
+Available now: `/health`, `/modules`, and `/module`. Administrative commands are top-level slash commands:
 
 ```text
-/moxie status
-/moxie health
-/moxie modules
-/moxie info
-/moxie config
+/health
+/modules
+/module name:status enabled:true
+/webhook list
+/moderation config
+/valheim status
 ```
 
 Example:
@@ -429,51 +430,51 @@ Pong!
 
 Shows the version, process uptime, API latency, gateway latency, and project support link.
 
-### `/moxie health`
+### `/health`
 
 Administrator-only, guild-only diagnostics with an ephemeral response. Shows Discord readiness, process uptime, and gateway latency. Database health performs a read-only `SELECT 1` and reports connected, unavailable, or not configured. The reply is deferred while the query runs. Health also reports whether the optional webhook listener is running. Health reports Uptime Kuma push-adapter support; it does not claim a live Kuma connection. Permission is checked at execution as well as in the command definition.
 
-### `/moxie modules` and `/moxie module`
+### `/modules` and `/module`
 
 List or change module settings for the server where the command is invoked. Both require Administrator permission and respond privately:
 
 ```text
-/moxie modules
-/moxie module name:status enabled:false
-/moxie module name:status enabled:true
+/modules
+/module name:status enabled:false
+/module name:status enabled:true
 ```
 
-The **admin** module is required: `/ping`, `/moxie health`, and module controls always remain available. The **webhooks** module defaults to disabled and gates incoming notification delivery. The **status** module currently owns `/about`; disabling status blocks `/about` in that guild only. Other guilds retain their own settings. Disabled commands remain registered in Discord and explain that their module is disabled when invoked.
+The **admin** module is required: `/ping`, `/health`, and module controls always remain available. The **webhooks** module defaults to disabled and gates incoming notification delivery. The **status** module currently owns `/about`; disabling status blocks `/about` in that guild only. Other guilds retain their own settings. Disabled commands remain registered in Discord and explain that their module is disabled when invoked.
 
 Settings persist across restarts. When Moxie starts or joins a guild, missing default settings are inserted without resetting existing choices. A configurable command also retries registration, so a temporary startup database failure does not require a restart after connectivity returns. Guild records are retained when Moxie leaves a server so rejoining preserves configuration; automatic data cleanup is not implemented yet.
 
 If the database cannot be reached, configurable commands stop with a clear configuration-unavailable message. They do not assume a module is enabled. `/ping` and health diagnostics remain available, while module listing and updates require PostgreSQL. `/about` is guild-only and defers its response while configuration is checked.
 
-### `/moxie webhook`
+### `/webhook`
 
 Administrator-only route controls: `create`, `list`, `rotate`, and `delete`. Each route has a generated token, a fixed guild/text-channel destination, and a hash stored in PostgreSQL. Management replies are private; tokens are shown only at creation/rotation. Generic routes accept plain-text content; Uptime Kuma routes accept native JSON notifications. Both suppress mentions, check destination permissions, and enforce payload and rate/concurrency limits.
 
-Enable the optional local listener with `WEBHOOK_ENABLED=true` in `.env`, then enable the guild's **webhooks** module with `/moxie module name:webhooks enabled:true`. Defaults are disabled and localhost port 3000. Follow the [webhook setup and test guide](docs/WEBHOOKS.md) for commands and a PowerShell request that prompts securely for the token. The migration is applied to the current development database; new databases need `npm run db:migrate:deploy`.
+Enable the optional local listener with `WEBHOOK_ENABLED=true` in `.env`, then enable the guild's **webhooks** module with `/module name:webhooks enabled:true`. Defaults are disabled and localhost port 3000. Follow the [webhook setup and test guide](docs/WEBHOOKS.md) for commands and a PowerShell request that prompts securely for the token. The migration is applied to the current development database; new databases need `npm run db:migrate:deploy`.
 
 ### Custom commands
 
-Administrators can save up to 50 text responses per server using `/moxie command add`, `edit`, `delete`, and `list`. After enabling the **customCommands** module for that server, members can use `/cmd run name:<name>` or `/cmd list`. Responses are limited to 1,800 characters and never ping roles or members, even if the saved text contains an `@` mention. The migration and slash commands are deployed on forge01; live command behavior awaits a Discord check. See the [custom commands guide](docs/CUSTOM_COMMANDS.md) for examples.
+Administrators can save up to 50 text responses per server using `/command add`, `edit`, `delete`, and `list`. Each saved name becomes a direct slash command in that server, such as `/rules`; `/commands` lists them. After enabling **customCommands**, members can run them. Responses are limited to 1,800 characters and never ping roles or members. `/command sync` retries Discord registration after a temporary failure. This layout needs redeployment on forge01 and a live Discord check. See the [custom commands guide](docs/CUSTOM_COMMANDS.md).
 
 ### Uptime Kuma
 
 Live test delivery from Kuma 1.23.17 is confirmed both through the Windows development bot and directly over forge01 Docker networking. A real DOWN alert is also confirmed; UP recovery remains to be verified. Kuma notifications now use status-colored Discord cards with monitor details and optional latency/time. Rebuild the VPS image to enable this formatting; Moxie needs Embed Links in the destination channel.
 
-Native Uptime Kuma JSON webhook notifications are supported through a dedicated route provider and disabled-by-default `uptimeKuma` module. Create a route with `/moxie webhook create name:kuma channel:#monitoring provider:Uptime Kuma`, then enable both `webhooks` and `uptimeKuma` for the guild. Existing generic routes keep their original format. Follow the [Uptime Kuma setup guide](docs/UPTIME_KUMA.md), including connectivity from forge01 to your local Windows bot.
+Native Uptime Kuma JSON webhook notifications are supported through a dedicated route provider and disabled-by-default `uptimeKuma` module. Create a route with `/webhook create name:kuma channel:#monitoring provider:Uptime Kuma`, then enable both `webhooks` and `uptimeKuma` for the guild. Existing generic routes keep their original format. Follow the [Uptime Kuma setup guide](docs/UPTIME_KUMA.md), including connectivity from forge01 to your local Windows bot.
 
 ### Valheim
 
-Members can use `/valheim status` to post the existing status card in their channel. It requires the guild's `valheim` module to be enabled and shares the administrator command's 15-second cache and concurrency limits. Administrators still manage the host and alert channel through `/moxie valheim`. See the [public command update instructions](docs/VALHEIM.md#public-status-command-update); this update needs command registration but no new migration.
+Members can use `/valheim status` to post the existing status card in their channel. It requires the guild's `valheim` module to be enabled and shares the administrator command's 15-second cache and concurrency limits. Administrators still manage the host and alert channel through `/valheim`. See the [public command update instructions](docs/VALHEIM.md#public-status-command-update); this update needs command registration but no new migration.
 
-Scheduled monitoring is now implemented: checks every 60 seconds, three failures before an unavailable alert, one recovery alert, and a saved baseline to avoid startup spam. Existing enabled configurations use their saved channel automatically. `/moxie health` includes scheduler diagnostics. Follow the [monitoring update guide](docs/VALHEIM_MONITORING.md) for the new migration and VPS rollout.
+Scheduled monitoring is now implemented: checks every 60 seconds, three failures before an unavailable alert, one recovery alert, and a saved baseline to avoid startup spam. Existing enabled configurations use their saved channel automatically. `/health` includes scheduler diagnostics. Follow the [monitoring update guide](docs/VALHEIM_MONITORING.md) for the new migration and VPS rollout.
 
 Two accompanying operations tools cover saved configuration across restart and container smoke checks: see [operations verification](docs/OPERATIONS.md). `bash scripts/verify-deployment.sh` runs checks; adding `--restart` also tests graceful shutdown and persistence with brief bot downtime. The user confirmed the VPS checks passed.
 
-Administrator-only `/moxie valheim configure`, `config`, `status`, and `remove` commands support one saved server per guild. The `valheim` module starts disabled; status checks return a private card with reported players, query latency, version, and connection details. A failed query is shown as unavailable rather than declaring the server offline. The Nitrado endpoint on UDP port 10471 is verified both locally and through a live status card from forge01 in Discord. Scheduled notifications are implemented; see the monitoring update guide above. Follow the [Valheim setup guide](docs/VALHEIM.md) for migration, deployment, and the supplied server's exact settings.
+Administrator-only `/valheim configure`, `config`, and `remove` commands support one saved server per guild. The `valheim` module starts disabled; `/valheim status` is a public card when enabled, with reported players, query latency, version, and connection details. A failed query is shown as unavailable rather than declaring the server offline. The Nitrado endpoint on UDP port 10471 is verified both locally and through a live status card from forge01 in Discord. Scheduled notifications are implemented; see the monitoring update guide above. Follow the [Valheim setup guide](docs/VALHEIM.md) for migration, deployment, and the supplied server's exact settings.
 
 ### Verify locally
 
@@ -483,7 +484,7 @@ npm run deploy
 npm run dev
 ```
 
-Invite the bot to your test server using the `bot` and `applications.commands` scopes; no privileged gateway intents are needed. Run `/ping` and `/about`, then `/moxie health` and `/moxie modules` as an administrator. Disable status, confirm `/about` is blocked and `/ping` still works, then re-enable status. Restart and check that settings persist. `/ping` should reply with Pong and edit in the response latency. Check that a non-administrator cannot execute health. Stop with Ctrl+C and confirm the shutdown log.
+Invite the bot to your test server using the `bot` and `applications.commands` scopes; no privileged gateway intents are needed. Run `/ping` and `/about`, then `/health` and `/modules` as an administrator. Disable status, confirm `/about` is blocked and `/ping` still works, then re-enable status. Restart and check that settings persist. `/ping` should reply with Pong and edit in the response latency. Check that a non-administrator cannot execute health. Stop with Ctrl+C and confirm the shutdown log.
 
 Tests use mock interactions, without Discord credentials or network calls. Live Discord verification is a separate step. `npm run deploy` replaces this application's command list in the target guild; the shared registry includes all three commands. It does not restrict which guilds the running bot can serve. Persistent per-guild settings are implemented; global command deployment remains planned.
 
@@ -493,7 +494,7 @@ For a compiled run, use `npm run build` followed by `npm start`. Use `npm ci` fo
 
 ## 🔐 Permissions
 
-Moxie uses Discord's native permission system and a shared runtime Administrator check for every `/moxie` subcommand. Toggleable module commands also check their guild's persisted enabled setting. Broader role-based access controls are planned.
+Moxie uses Discord's native permission system and runtime Administrator checks for its administrative commands. Toggleable module commands also check their guild's persisted enabled setting. Broader role-based access controls are planned.
 
 Planned permission features include:
 
@@ -548,7 +549,7 @@ After editing `prisma/schema.prisma`, create a new migration against a developme
 
 Client generation is part of `npm run build` and `npm run dev`; generated code is ignored by Git. Builds and automated tests require no database credentials or live connection. Prisma CLI settings live in `prisma.config.ts`. The generated client retains the project's CommonJS format; see the [Prisma generator documentation](https://www.prisma.io/docs/orm/prisma-schema/overview/generators).
 
-At startup, the bot checks database connectivity but remains available if the database is unreachable. `/moxie health` checks current connectivity on each invocation. Shutdown closes the Prisma connection pool. Keep the SSH tunnel open while developing. For a future Docker deployment, use the database's Docker service/network name in `DATABASE_URL` rather than the local tunnel address.
+At startup, the bot checks database connectivity but remains available if the database is unreachable. `/health` checks current connectivity on each invocation. Shutdown closes the Prisma connection pool. Keep the SSH tunnel open while developing. For a future Docker deployment, use the database's Docker service/network name in `DATABASE_URL` rather than the local tunnel address.
 
 Planned stored data includes:
 

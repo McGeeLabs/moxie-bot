@@ -1,14 +1,15 @@
 import { REST, Routes } from "discord.js";
 import { readDeploymentConfig } from "./core/config";
 import { logger } from "./core/logger";
-import { commands } from "./modules";
+import { guildCommandDefinitions } from "./modules/customCommands/registration";
 
 async function main() {
   const config = readDeploymentConfig();
   const rest = new REST({ version: "10" }).setToken(config.token);
-  logger.info("Deploying guild commands", { guildId: config.guildId, count: commands.length });
+  const definitions = await guildCommandDefinitions(config.guildId);
+  logger.info("Deploying guild commands", { guildId: config.guildId, count: definitions.length });
   await rest.put(Routes.applicationGuildCommands(config.clientId, config.guildId), {
-    body: commands.map(command => command.data.toJSON()),
+    body: definitions,
   });
   logger.info("Commands deployed", { guildId: config.guildId });
 }

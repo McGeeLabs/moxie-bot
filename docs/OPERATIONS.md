@@ -53,6 +53,6 @@ The read-only mount makes the snapshot available to the container. A match exits
 
 ## Scheduled monitoring health
 
-`/moxie health` now reports whether the Valheim scheduler is running, whether a cycle is active, the last successful cycle time, last-cycle query totals, and cumulative scheduler/delivery error counts. These counters reset on process restart; saved monitor baseline and failure counts live in PostgreSQL.
+`/health` now reports whether the Valheim scheduler is running, whether a cycle is active, the last successful cycle time, last-cycle query totals, and cumulative scheduler/delivery error counts. These counters reset on process restart; saved monitor baseline and failure counts live in PostgreSQL.
 
 Use `moxie logs --tail 100 bot` for startup, safe task-failure, transition-delivery, and shutdown messages. Scheduler failures are retried on subsequent cycles. A database SELECT 1 succeeding alone does not establish that all migrations are applied; the deployment verifier checks migration status too.

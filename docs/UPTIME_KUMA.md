@@ -8,14 +8,14 @@ The payload and Additional Headers settings were checked against the [Uptime Kum
 
 After updating Moxie, applying migrations, and deploying commands, restart the bot. As a Discord server administrator:
 
-1. Run `/moxie webhook create name:kuma channel:#monitoring provider:Uptime Kuma`.
+1. Run `/webhook create name:kuma channel:#monitoring provider:Uptime Kuma`.
 2. Save the private token shown once. Existing generic routes remain generic; create a separate route for Kuma.
-3. Run `/moxie module name:webhooks enabled:true`.
-4. Run `/moxie module name:uptimeKuma enabled:true`.
+3. Run `/module name:webhooks enabled:true`.
+4. Run `/module name:uptimeKuma enabled:true`.
 
 Both toggles apply only to this Discord server. Disabling either stops Kuma delivery. The `uptimeKuma` module starts disabled. Route listing includes the provider; rotation and deletion use the existing webhook commands.
 
-If Discord says the command is outdated or only shows `name` and `channel`, clear the unfinished command and reload Discord (Ctrl+R in the Windows desktop app). Start a fresh `/moxie webhook create`, then select the optional `provider` field from Discord's option picker and choose **Uptime Kuma**. Command deployment updates Discord's registration; the client may still display a cached definition until refreshed. Omitting `provider` creates a Generic route, which cannot accept native Kuma payloads.
+If Discord says the command is outdated or only shows `name` and `channel`, clear the unfinished command and reload Discord (Ctrl+R in the Windows desktop app). Start a fresh `/webhook create`, then select the optional `provider` field from Discord's option picker and choose **Uptime Kuma**. Command deployment updates Discord's registration; the client may still display a cached definition until refreshed. Omitting `provider` creates a Generic route, which cannot accept native Kuma payloads.
 
 ## Configure Kuma 1.23.17
 

@@ -7,7 +7,8 @@ const { WebhookService, WebhookError, validateEvent } = require('../dist/integra
 const { WebhookServer } = require('../dist/integrations/webhooks/server');
 const { DiscordWebhookDelivery } = require('../dist/integrations/webhooks/discordDelivery');
 const { readWebhookConfig } = require('../dist/core/config');
-const { execute: admin } = require('../dist/modules/admin/moxie');
+const { adminCommands } = require('../dist/modules/admin/standalone');
+const webhookAdmin = adminCommands.find(command => command.data.name === 'webhook').execute;
 const { logger } = require('../dist/core/logger');
 
 function fixture() {
@@ -148,7 +149,7 @@ test('Discord destinations require a same-guild text channel and explicit bot pe
 test('webhook admin commands reject non-administrators before touching route storage', async () => {
   let accessed = false;
   const calls = [];
-  await admin({ inGuild: () => true, memberPermissions: { has: () => false },
+  await webhookAdmin({ inGuild: () => true, memberPermissions: { has: () => false },
     options: { getSubcommandGroup: () => { accessed = true; return 'webhook'; } },
     reply: async value => calls.push(value),
   });
@@ -203,10 +204,10 @@ test('logs redact generated webhook Bearer tokens', () => {
   } finally { console.warn = previous; }
 });
 
-test('webhook creation through /moxie returns the token privately and binds this guild', async () => {
+test('webhook creation through /webhook returns the token privately and binds this guild', async () => {
   const f = fixture();
   const calls = [];
-  await admin({
+  await webhookAdmin({
     inGuild: () => true, guildId: 'guild-a', memberPermissions: { has: () => true }, user: { id: 'admin' },
     client: { webhooks: f.service },
     options: { getSubcommandGroup: () => 'webhook', getSubcommand: () => 'create', getString: name => name === 'provider' ? null : 'monitor', getChannel: () => ({ id: 'channel-a' }) },

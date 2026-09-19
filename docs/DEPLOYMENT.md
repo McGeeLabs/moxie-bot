@@ -68,7 +68,7 @@ docker compose --env-file .env.docker -f compose.yaml up -d bot
 docker compose --env-file .env.docker -f compose.yaml logs --tail 100 -f bot
 ```
 
-Check `/ping`, `/moxie health`, and `/moxie modules` in Discord. The database should show connected, and saved guild settings should be preserved.
+Check `/ping`, `/health`, and `/modules` in Discord. The database should show connected, and saved guild settings should be preserved.
 
 Command registration is separate from startup. If command definitions have changed, configure the application and target guild IDs, then run:
 
@@ -116,7 +116,7 @@ docker compose --env-file .env.docker -f compose.yaml down
 
 For standalone mode, use `-f compose.standalone.yaml`. Normal `down` preserves the named database volume; do not add `--volumes` when you intend to retain data. The existing VPS PostgreSQL container is not managed by `compose.yaml` and is left running.
 
-The bot runs as the image's non-root `node` user. Compose forwards shutdown signals through its init process and allows 30 seconds for Discord and database connections to close. Logs go to stdout/stderr with Docker log rotation. The bot restarts unless explicitly stopped; diagnostics remain available when a database connection fails. No bot-specific container health check is implemented yet—use logs and `/moxie health` for operational checks.
+The bot runs as the image's non-root `node` user. Compose forwards shutdown signals through its init process and allows 30 seconds for Discord and database connections to close. Logs go to stdout/stderr with Docker log rotation. The bot restarts unless explicitly stopped; diagnostics remain available when a database connection fails. No bot-specific container health check is implemented yet—use logs and `/health` for operational checks.
 
 ## Build layout
 

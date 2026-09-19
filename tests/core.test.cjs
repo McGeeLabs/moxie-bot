@@ -45,7 +45,7 @@ test('runtime only needs a token; deployment validates IDs without exposing valu
 });
 
 test('registry serializes all commands and rejects name collisions', () => {
-  assert.deepEqual(commands.map(command => command.data.toJSON().name).sort(), ['about', 'ban', 'case', 'cases', 'cmd', 'kick', 'moxie', 'ping', 'reason', 'timeout', 'untimeout', 'valheim', 'warn', 'warnings']);
+  assert.deepEqual(commands.map(command => command.data.toJSON().name).sort(), ['about', 'ban', 'case', 'cases', 'command', 'commands', 'health', 'kick', 'moderation', 'module', 'modules', 'ping', 'reason', 'timeout', 'untimeout', 'valheim', 'warn', 'warnings', 'webhook']);
   assert.throws(() => collectCommands([{ name: 'duplicate', commands: [commands[0], commands[0]] }]), /Duplicate command: ping/);
 });
 
@@ -63,7 +63,7 @@ test('non-command interactions are ignored and stale commands receive a reply', 
   await dispatch(ignored);
   assert.equal(ignored.calls.length, 0);
   const stale = interaction({ commandName: 'removed' });
-  await dispatch(stale);
+  await dispatch(stale, undefined, { get: async () => null });
   assert.equal(stale.calls[0][1].flags, MessageFlags.Ephemeral);
 });
 

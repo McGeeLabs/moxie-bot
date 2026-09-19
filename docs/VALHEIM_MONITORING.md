@@ -35,7 +35,7 @@ Cycles do not overlap. Up to four scheduled queries run concurrently, and each c
 
 ## Verify
 
-Run `/moxie health` and confirm the scheduler is running and the last successful cycle advances. `/moxie valheim config` shows the saved channel and interval. Existing settings do not need to be re-entered.
+Run `/health` and confirm the scheduler is running and the last successful cycle advances. `/valheim config` shows the saved channel and interval. Existing settings do not need to be re-entered.
 
 Local tests simulate failure/recovery, failed delivery retry, module/config changes during a query, restart baselines, and shutdown. They use stub senders and do not post real Discord notifications. Live scheduled alert delivery remains to be verified after deployment. Avoid interrupting the real game server just to test an alert; a separate test bot/guild and UDP test endpoint can exercise failure/recovery without affecting players. Reconfiguring an existing server resets the quiet baseline, so changing its host to an invalid hostname is not a reliable transition test.
 

@@ -92,7 +92,7 @@ moxie ps
 moxie logs --tail 100 -f bot
 ```
 
-Ctrl+C exits the log viewer without stopping the bot. Confirm Discord readiness, successful guild sync, and listener startup on port 3000. Check `/ping`, `/moxie health`, `/moxie modules`, and `/moxie webhook list`. Health should report database connected and webhook listening. Existing toggles/routes should still be present. The restart policy restarts the bot after Docker/host restart unless you explicitly stop it.
+Ctrl+C exits the log viewer without stopping the bot. Confirm Discord readiness, successful guild sync, and listener startup on port 3000. Check `/ping`, `/health`, `/modules`, and `/webhook list`. Health should report database connected and webhook listening. Existing toggles/routes should still be present. The restart policy restarts the bot after Docker/host restart unless you explicitly stop it.
 
 ## 6. Switch Kuma to the private Docker URL
 
@@ -102,7 +102,7 @@ Edit the saved Kuma notification's Post URL to:
 http://moxie-bot:3000/webhooks/YOUR_EXISTING_KUMA_ROUTE_ID
 ```
 
-Use the Kuma route path from `/moxie webhook list`, keep the existing bearer token in Kuma's Additional Headers, and retain JSON preset. Do not use the generic monitor route. No token rotation is needed because the database is unchanged. If the token was lost, rotate it privately and update Kuma.
+Use the Kuma route path from `/webhook list`, keep the existing bearer token in Kuma's Additional Headers, and retain JSON preset. Do not use the generic monitor route. No token rotation is needed because the database is unchanged. If the token was lost, rotate it privately and update Kuma.
 
 Click **Test**, confirm the message in Discord, and **Save**. Restore the Automation monitor's original n8n URL if it is still changed for testing, then verify an UP notification. Confirm this notification is enabled on the chosen monitors.
 

@@ -5,7 +5,6 @@ const { parseInfo, queryValheim } = require('../dist/integrations/valheim/query'
 const { ValheimService, ValheimError, normalizeHost } = require('../dist/modules/valheim/service');
 const { ConfigurationUnavailableError } = require('../dist/core/database/guildConfiguration');
 const { statusEmbed, execute } = require('../dist/modules/valheim/commands');
-const { execute: admin } = require('../dist/modules/admin/moxie');
 const { data: publicData, execute: publicStatus } = require('../dist/modules/valheim/status');
 const { execute: dispatch } = require('../dist/core/events/interactionCreate');
 
@@ -40,12 +39,12 @@ function fixture(query = async () => ({ ...parseInfo(packet()), latencyMs: 25 })
   return { service, rows, enabled, configure, advance: () => { time += 15001; } };
 }
 
-test('public Valheim command offers only status, without an administrator restriction', () => {
+test('Valheim status remains public while configuration subcommands are available', () => {
   const command = publicData.toJSON();
   assert.equal(command.name, 'valheim');
   assert.equal(command.dm_permission, false);
   assert.equal(command.default_member_permissions, undefined);
-  assert.deepEqual(command.options.map(option => option.name), ['status']);
+  assert.deepEqual(command.options.map(option => option.name), ['status', 'configure', 'config', 'remove']);
 });
 
 test('members can request public cards through the module dispatcher without double acknowledgement', async () => {
@@ -180,10 +179,10 @@ test('storage failures are sanitized and do not start a network query', async ()
 });
 
 test('Valheim admin dispatch rejects non-administrators before accessing options or storage', async () => {
-  let accessed = false;
-  await admin({ inGuild: () => true, memberPermissions: { has: () => false },
-    options: { getSubcommandGroup: () => { accessed = true; return 'valheim'; } }, reply: async () => {} });
-  assert.equal(accessed, false);
+  const replies = [];
+  await publicStatus({ inGuild: () => true, memberPermissions: { has: () => false },
+    options: { getSubcommand: () => 'configure' }, reply: async value => replies.push(value) });
+  assert.match(replies[0].content, /Administrator/);
 });
 
 test('configuration command binds this guild and validates its channel; replies are private', async () => {

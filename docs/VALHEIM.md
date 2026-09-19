@@ -2,11 +2,11 @@
 
 Scheduled checks and transition-only notifications are now implemented. Follow the [scheduled monitoring update guide](VALHEIM_MONITORING.md) after completing the setup below. The saved channel is now used for alerts when the module is enabled.
 
-Moxie stores one Valheim server configuration per Discord guild and supports on-demand A2S_INFO queries. The `valheim` module starts disabled. All `/moxie valheim` commands require guild Administrator permissions and reply privately. Configuration and removal remain available when the module is disabled; status checks require it to be enabled.
+Moxie stores one Valheim server configuration per Discord guild and supports on-demand A2S_INFO queries. The `valheim` module starts disabled. `/valheim configure`, `config`, and `remove` require guild Administrator permissions and reply privately. Configuration and removal remain available when the module is disabled; public status checks require it to be enabled.
 
 ## Public status command update
 
-Members can now use `/valheim status`. Its card is visible in the channel where they request it and includes the configured host/game port. Use it in channels where you want members to see those connection details. The command works only in guilds with the `valheim` module enabled and a saved configuration. It shares the existing 15-second on-demand cache and query concurrency limits. `/moxie valheim status` remains a private administrator diagnostic; configuration commands remain administrator-only.
+Members can use `/valheim status`. Its card is visible in the channel where they request it and includes the configured host/game port. Use it in channels where you want members to see those connection details. The command works only in guilds with the `valheim` module enabled and a saved configuration. It shares the existing 15-second on-demand cache and query concurrency limits. Configuration commands remain administrator-only.
 
 After committing and pushing this update, run these commands in the existing forge01 checkout:
 
@@ -18,7 +18,7 @@ moxie up -d bot
 moxie run --rm bot node dist/deploy-commands.js
 ```
 
-No new database migration is needed for this public command; the previous Valheim and monitoring migrations must already be applied. Reload Discord if the command picker is stale. Test `/valheim status` as a non-administrator, then check that the member cannot configure the host through `/moxie valheim`. The public command's live VPS check remains pending.
+No new database migration is needed for this public command; the previous Valheim and monitoring migrations must already be applied. Reload Discord if the command picker is stale. Test `/valheim status` as a non-administrator, then check that the member cannot configure the host through `/valheim`. The public command's live VPS check remains pending.
 
 ## Verified Nitrado endpoint
 
@@ -70,9 +70,9 @@ The bot container now defaults to **moxie-bot**. Compose recreates its old `moxi
 Use Discord's command picker:
 
 ```text
-/moxie valheim configure host:valheim.mcgeelabs.com game-port:10470 query-port:10471 channel:#monitoring
-/moxie module name:valheim enabled:true
-/moxie valheim status
+/valheim configure host:valheim.mcgeelabs.com game-port:10470 query-port:10471 channel:#monitoring
+/module name:valheim enabled:true
+/valheim status
 ```
 
 The host excludes the port and URL prefix. `query-port` is optional and defaults to game port + 1, but using the verified explicit value is clearest here. The channel must be a same-guild text channel where the bot can view and send messages. It is used for scheduled alerts after applying the monitoring migration and image update.
@@ -80,8 +80,8 @@ The host excludes the port and URL prefix. `query-port` is optional and defaults
 Other commands:
 
 ```text
-/moxie valheim config
-/moxie valheim remove
+/valheim config
+/valheim remove
 ```
 
 Status displays a green card on a valid Valheim reply: server name, game connection address, query port, reported player count/capacity, query latency, reported version, and whether a password is required. It never stores or requests the game password. Failed checks display an amber **Query unavailable** card with a safe diagnostic.

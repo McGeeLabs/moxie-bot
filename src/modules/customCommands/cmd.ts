@@ -2,12 +2,9 @@ import { SlashCommandBuilder, type ChatInputCommandInteraction } from "discord.j
 import { customCommandService, CustomCommandError, type CustomCommandService } from "./service";
 
 export const data = new SlashCommandBuilder()
-  .setName("cmd")
-  .setDescription("Run or list this server's custom commands")
-  .setDMPermission(false)
-  .addSubcommand(command => command.setName("run").setDescription("Post a saved response")
-    .addStringOption(option => option.setName("name").setDescription("Custom command name").setRequired(true)))
-  .addSubcommand(command => command.setName("list").setDescription("List saved command names"));
+  .setName("commands")
+  .setDescription("List this server's saved command names")
+  .setDMPermission(false);
 
 export async function execute(interaction: ChatInputCommandInteraction, service: CustomCommandService = customCommandService) {
   if (!interaction.guildId) {
@@ -16,17 +13,10 @@ export async function execute(interaction: ChatInputCommandInteraction, service:
   }
   if (!interaction.deferred) await interaction.deferReply();
   try {
-    if (interaction.options.getSubcommand() === "list") {
-      const commands = await service.list(interaction.guildId);
-      await interaction.editReply({ content: commands.length
-        ? `**Custom commands**\n${commands.map(command => `• \`${command.name}\``).join("\n")}`
-        : "No custom commands yet. An administrator can add one with /moxie command add.",
-        allowedMentions: { parse: [] } });
-      return;
-    }
-    const name = interaction.options.getString("name", true);
-    const command = await service.get(interaction.guildId, name);
-    await interaction.editReply({ content: command?.content ?? "No custom command with that name exists in this server.",
+    const commands = await service.list(interaction.guildId);
+    await interaction.editReply({ content: commands.length
+      ? `**Custom commands**\n${commands.map(command => `• \`${command.name}\``).join("\n")}`
+      : "No custom commands yet. An administrator can add one with /command add.",
       allowedMentions: { parse: [] } });
   } catch (error) {
     if (error instanceof CustomCommandError) await interaction.editReply({ content: error.message, allowedMentions: { parse: [] } });

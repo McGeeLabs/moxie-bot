@@ -8,7 +8,7 @@ The roadmap is intentionally flexible and may evolve as features are implemented
 
 ## Current Status
 
-**Phase 0 (Foundation)** is complete. Core reliability and guild configuration are implemented and covered by automated tests. Live `/moxie health`, module listing, disable/re-enable controls, and disabled `/about` blocking are confirmed by the user in Discord. Enabled `/about`, `/ping`, and persistence across a bot restart still need live verification. **Phase 1 (Core Platform)** remains the current priority.
+**Phase 0 (Foundation)** is complete. Core reliability and guild configuration are implemented and covered by automated tests. Live `/health`, module listing, disable/re-enable controls, and disabled `/about` blocking are confirmed by the user in Discord. Enabled `/about`, `/ping`, and persistence across a bot restart still need live verification. **Phase 1 (Core Platform)** remains the current priority.
 
 ### Milestone 1 — Core reliability and diagnostics
 
@@ -19,10 +19,10 @@ The roadmap is intentionally flexible and may evolve as features are implemented
 - [x] Structured JSON logging with Discord-token redaction
 - [x] Handle startup, deployment, client, command, and error-reply failures
 - [x] Graceful shutdown on Ctrl+C / SIGTERM
-- [x] Administrator-only `/moxie health` with runtime permission checks
+- [x] Administrator-only `/health` with runtime permission checks
 - [x] Separate runtime token requirements from deployment ID requirements
 - [x] Automated local tests and Linux CI configured for Node 22/24
-- [x] Live `/moxie health` response confirmed by user (Discord ready, database connected)
+- [x] Live `/health` response confirmed by user (Discord ready, database connected)
 - [ ] Verify `/ping` and `/about` against a live test guild
 
 ### Milestone 3 — Docker deployment preparation
@@ -124,7 +124,7 @@ The roadmap is intentionally flexible and may evolve as features are implemented
 
 - [x] Add guild-only `/valheim status` without an Administrator permission requirement
 - [x] Reuse the existing card, per-guild module checks, query cache, and concurrency limits
-- [x] Keep configuration and removal under administrator-only `/moxie valheim`
+- [x] Keep configuration and removal under administrator-only `/valheim`
 - [x] Cover member access, disabled modules, DMs, missing configuration, errors, and cache reuse in automated tests
 - [x] TypeScript build and all 71 automated tests pass
 - [x] Deploy and register the new command on forge01; user confirmed it works
@@ -192,8 +192,8 @@ Phase 1 establishes the database-backed infrastructure needed for all future fea
 - [x] Multi-guild configuration behavior with isolated settings
 - [x] Bot startup and guild-join sync (preserves existing choices)
 - [x] Persistent module flags per guild; disabled and unavailable settings block execution
-- [x] Shared guild Administrator permission check for all `/moxie` subcommands
-- [x] `/moxie modules` listing and `/moxie module` enabled/disabled controls
+- [x] Shared guild Administrator permission checks for top-level administrative commands
+- [x] `/modules` listing and `/module` enabled/disabled controls
 - [x] Required admin module keeps `/ping`, health, and recovery controls available
 - [x] 20 automated tests plus real PostgreSQL transaction verification (verification records rolled back)
 - [x] Updated guild command definitions deployed to the development guild
@@ -211,8 +211,9 @@ Phase 1 establishes the database-backed infrastructure needed for all future fea
 Database-backed admin-defined commands. Enables server owners to create custom responses without code changes.
 
 - [x] Per-guild database schema for text custom commands
-- [x] `/cmd run name:<name>` and `/cmd list` for members, gated by the customCommands module
-- [x] Administrator-only `/moxie command add`, `edit`, `delete`, and `list`
+- [x] Direct saved slash commands such as `/rules` and `/commands` listing, gated by the customCommands module
+- [x] Administrator-only `/command add`, `edit`, `delete`, and `list`
+- [x] Flatten built-in admin commands and synchronize saved slash commands per guild
 - [x] Apply additive migration and register updated guild slash commands on forge01; bot, database, and dashboard healthy
 - [ ] Verify add, edit, run, list, delete, and mention suppression live in Discord
 - [ ] Embed support for custom responses
