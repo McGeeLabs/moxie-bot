@@ -5,4 +5,5 @@ export const moduleDefinitions = [
   { name: "uptimeKuma", required: false, defaultEnabled: false },
   { name: "valheim", required: false, defaultEnabled: false },
   { name: "moderation", required: false, defaultEnabled: false },
+  { name: "customCommands", required: false, defaultEnabled: false },
 ] as const;

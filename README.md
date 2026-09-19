@@ -455,6 +455,10 @@ Administrator-only route controls: `create`, `list`, `rotate`, and `delete`. Eac
 
 Enable the optional local listener with `WEBHOOK_ENABLED=true` in `.env`, then enable the guild's **webhooks** module with `/moxie module name:webhooks enabled:true`. Defaults are disabled and localhost port 3000. Follow the [webhook setup and test guide](docs/WEBHOOKS.md) for commands and a PowerShell request that prompts securely for the token. The migration is applied to the current development database; new databases need `npm run db:migrate:deploy`.
 
+### Custom commands
+
+Administrators can save up to 50 text responses per server using `/moxie command add`, `edit`, `delete`, and `list`. After enabling the **customCommands** module for that server, members can use `/cmd run name:<name>` or `/cmd list`. Responses are limited to 1,800 characters and never ping roles or members, even if the saved text contains an `@` mention. See the [custom commands guide](docs/CUSTOM_COMMANDS.md) for the rollout steps and examples.
+
 ### Uptime Kuma
 
 Live test delivery from Kuma 1.23.17 is confirmed both through the Windows development bot and directly over forge01 Docker networking. A real DOWN alert is also confirmed; UP recovery remains to be verified. Kuma notifications now use status-colored Discord cards with monitor details and optional latency/time. Rebuild the VPS image to enable this formatting; Moxie needs Embed Links in the destination channel.

@@ -210,11 +210,10 @@ Phase 1 establishes the database-backed infrastructure needed for all future fea
 
 Database-backed admin-defined commands. Enables server owners to create custom responses without code changes.
 
-- [ ] Database schema for custom commands
-- [ ] `/cmd <name>` command execution
-- [ ] `/cmd add <name> <response>` create command (admin-only)
-- [ ] `/cmd edit <name> <response>` update command
-- [ ] `/cmd delete <name>` remove command
+- [x] Per-guild database schema for text custom commands
+- [x] `/cmd run name:<name>` and `/cmd list` for members, gated by the customCommands module
+- [x] Administrator-only `/moxie command add`, `edit`, `delete`, and `list`
+- [ ] Verify migration, command registration, and live text response on forge01
 - [ ] Embed support for custom responses
 - [ ] Command usage logging
 

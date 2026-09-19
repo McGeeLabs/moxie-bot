@@ -19,6 +19,21 @@ model Guild {
   valheim   ValheimServerConfig?
   moderation ModerationConfig?
   moderationCases ModerationCase[]
+  customCommands CustomCommand[]
+}
+
+model CustomCommand {
+  id          String   @id @default(uuid())
+  guildId     String
+  name        String
+  content     String
+  createdById String
+  updatedById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  guild       Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@unique([guildId, name])
 }
 
 model WebhookRoute {
