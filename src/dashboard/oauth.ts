@@ -1,9 +1,17 @@
 import { PermissionFlagsBits } from "discord.js";
+import { setTimeout as delay } from "node:timers/promises";
 import type { DashboardConfig } from "../core/config";
 
 export type OAuthGuild = { id: string; name: string; owner: boolean; permissions: string };
 export type OAuthIdentity = { id: string; username: string };
 export type OAuthToken = { accessToken: string; expiresIn: number };
+
+export class DiscordOAuthError extends Error {
+  constructor(readonly status: number) {
+    super("Discord OAuth API unavailable");
+    this.name = "DiscordOAuthError";
+  }
+}
 
 export function isGuildAdministrator(guild: OAuthGuild): boolean {
   try { return guild.owner || (BigInt(guild.permissions) & PermissionFlagsBits.Administrator) !== 0n; }
@@ -37,11 +45,21 @@ export class DiscordOAuth {
   }
 
   private async get<T>(accessToken: string, path: string): Promise<T> {
-    const response = await this.request(`https://discord.com/api/v10${path}`, {
-      headers: { authorization: `Bearer ${accessToken}` }, signal: AbortSignal.timeout(8000),
-    });
-    if (!response.ok) throw new Error("Discord OAuth API unavailable");
-    return response.json() as Promise<T>;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const response = await this.request(`https://discord.com/api/v10${path}`, {
+        headers: { authorization: `Bearer ${accessToken}` }, signal: AbortSignal.timeout(8000),
+      });
+      if (response.ok) return response.json() as Promise<T>;
+      if (response.status === 429 && attempt === 0) {
+        const seconds = Number(response.headers.get("retry-after"));
+        if (Number.isFinite(seconds) && seconds >= 0 && seconds <= 8) {
+          await delay(Math.max(100, Math.ceil(seconds * 1000) + 50));
+          continue;
+        }
+      }
+      throw new DiscordOAuthError(response.status);
+    }
+    throw new DiscordOAuthError(429);
   }
 
   async identity(accessToken: string): Promise<OAuthIdentity> {

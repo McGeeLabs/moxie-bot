@@ -50,4 +50,6 @@ Do not put `/callback` in `DASHBOARD_BASE_URL`; Moxie adds that path when it sta
 
 If the dashboard does not start, check the safe startup log and the exact `DASHBOARD_BASE_URL` and Developer Portal redirect. Disabling it is one environment change: set `DASHBOARD_ENABLED=false` and recreate the bot container. Existing Discord commands and data continue to work.
 
+Setting forms save the change and redirect back to the server page. That page rechecks current Discord Administrator access. Moxie retries one short Discord OAuth rate limit during that check; a remaining request failure logs the error type and upstream HTTP status without logging OAuth tokens.
+
 The next dashboard slice can add read-only moderation case browsing. Custom commands and reaction-role editing will follow their respective bot modules.

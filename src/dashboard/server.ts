@@ -8,7 +8,7 @@ import { DiscordWebhookDelivery } from "../integrations/webhooks/discordDelivery
 import { WebhookError } from "../integrations/webhooks/errors";
 import { moderationService, type ModerationService } from "../modules/moderation/service";
 import { moduleDefinitions } from "../modules/definitions";
-import { DiscordOAuth, isGuildAdministrator, type OAuthGuild } from "./oauth";
+import { DiscordOAuth, DiscordOAuthError, isGuildAdministrator, type OAuthGuild } from "./oauth";
 
 type Session = { userId: string; username: string; accessToken: string; csrf: string; expires: number };
 const MAX_SESSIONS = 1000;
@@ -97,7 +97,9 @@ export class DashboardServer {
   async handle(request: IncomingMessage, response: ServerResponse): Promise<void> {
     try { await this.route(request, response); }
     catch (error) {
-      logger.warn("Dashboard request failed", { path: request.url?.split("?")[0] ?? "unknown" });
+      logger.warn("Dashboard request failed", { path: request.url?.split("?")[0] ?? "unknown",
+        errorType: error instanceof Error ? error.name : "unknown",
+        upstreamStatus: error instanceof DiscordOAuthError ? error.status : null });
       const message = error instanceof WebhookError ? error.message : "Dashboard request failed. Please try again.";
       page(response, "Request failed", `<div class="card"><h1>Request failed</h1><p>${escape(message)}</p><a href="/">Back to dashboard</a></div>`,
         error instanceof WebhookError ? error.status : 503);

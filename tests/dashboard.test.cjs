@@ -2,7 +2,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { PermissionFlagsBits, ChannelType } = require('discord.js');
 const { readDashboardConfig } = require('../dist/core/config');
-const { isGuildAdministrator, DiscordOAuth } = require('../dist/dashboard/oauth');
+const { isGuildAdministrator, DiscordOAuth, DiscordOAuthError } = require('../dist/dashboard/oauth');
 const { DashboardServer } = require('../dist/dashboard/server');
 
 const guildId = '123456789012345678';
@@ -79,6 +79,21 @@ test('OAuth uses a state value, form encoded exchange, and identifies admin guil
   assert.equal(calls[0][1].headers['content-type'], 'application/x-www-form-urlencoded');
   assert.equal(isGuildAdministrator({ owner: false, permissions: String(PermissionFlagsBits.Administrator) }), true);
   assert.equal(isGuildAdministrator({ owner: false, permissions: '0' }), false);
+});
+
+test('OAuth guild lookup retries a Discord rate limit once and reports other failures safely', async () => {
+  const config = { clientId: '423456789012345678', clientSecret: 'private-test-secret', baseUrl: new URL('https://moxie.example.com/') };
+  let calls = 0;
+  const oauth = new DiscordOAuth(config, async () => {
+    calls++;
+    if (calls === 1) return { ok: false, status: 429, headers: new Headers({ 'retry-after': '0' }) };
+    return { ok: true, json: async () => [{ id: guildId, name: 'Server', owner: true, permissions: '0' }] };
+  });
+  assert.equal((await oauth.guilds('secret-access-token')).length, 1);
+  assert.equal(calls, 2);
+  const denied = new DiscordOAuth(config, async () => ({ ok: false, status: 403 }));
+  await assert.rejects(denied.guilds('secret-access-token'), error =>
+    error instanceof DiscordOAuthError && error.status === 403 && !error.message.includes('secret-access-token'));
 });
 
 test('dashboard requires matching OAuth state and protects settings with fresh admin rights and CSRF', async () => {
