@@ -18,7 +18,7 @@ model Guild {
   webhooks  WebhookRoute[]
   valheim   ValheimServerConfig?
   moderation ModerationConfig?
-  warnings  ModerationWarning[]
+  moderationCases ModerationCase[]
 }
 
 model WebhookRoute {
@@ -79,14 +79,27 @@ model ModerationConfig {
   guild        Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
 }
 
-model ModerationWarning {
+model ModerationCase {
   id              String   @id @default(uuid())
   guildId         String
   targetUserId    String
   moderatorUserId String
+  action          ModerationAction @default(warn)
   reason          String
+  durationMinutes Int?
   createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  reasonUpdatedAt DateTime?
+  reasonUpdatedById String?
   guild           Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
 
   @@index([guildId, targetUserId, createdAt])
+}
+
+enum ModerationAction {
+  warn
+  timeout
+  untimeout
+  kick
+  ban
 }

@@ -7,6 +7,11 @@ import * as warn from "./moderation/warn";
 import * as warnings from "./moderation/warnings";
 import * as timeout from "./moderation/timeout";
 import * as untimeout from "./moderation/untimeout";
+import * as cases from "./moderation/cases";
+import * as moderationCase from "./moderation/case";
+import * as reason from "./moderation/reason";
+import * as kick from "./moderation/kick";
+import * as ban from "./moderation/ban";
 import { moduleDefinitions } from "./definitions";
 
 // Diagnostics and module controls remain available even when status is disabled.
@@ -16,7 +21,7 @@ export const modules: readonly BotModule[] = [
   { ...moduleDefinitions[2], commands: [] },
   { ...moduleDefinitions[3], commands: [] },
   { ...moduleDefinitions[4], commands: [valheim] },
-  { ...moduleDefinitions[5], commands: [warn, warnings, timeout, untimeout] },
+  { ...moduleDefinitions[5], commands: [warn, warnings, timeout, untimeout, cases, moderationCase, reason, kick, ban] },
 ];
 
 export function collectCommands(registeredModules: readonly BotModule[]): Command[] {

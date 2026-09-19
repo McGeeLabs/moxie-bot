@@ -141,6 +141,17 @@ The roadmap is intentionally flexible and may evolve as features are implemented
 - [x] Prisma schema validation, TypeScript build, and all 80 automated tests pass
 - [ ] Apply the migration, deploy commands, configure the log channel, and verify all four commands on forge01
 
+### Milestone 10 — Unified moderation cases
+
+- [x] Preserve existing warning IDs/timestamps while migrating them into unified moderation cases
+- [x] Store timeout, timeout-removal, kick, and ban cases with reasons and optional duration
+- [x] Add `/cases`, `/case`, and audited `/reason` correction commands
+- [x] Add `/kick` and `/ban` with action-specific user/bot permissions and hierarchy checks
+- [x] Keep departed-member history accessible and prevent failed Discord actions from creating false cases
+- [x] Include all case types and reason corrections in persistence fingerprints
+- [x] Prisma schema validation, TypeScript build, and all 85 automated tests pass
+- [ ] Back up PostgreSQL, apply the case migration, register commands, and verify the new actions on forge01
+
 ### Remaining deployment verification
 
 1. Verify enabled `/about`, `/ping`, and saved settings across a bot restart in Discord. Module listing and disable/re-enable controls are verified live. Guild sync, persistent toggles, admin controls, PostgreSQL/Prisma, and database health are implemented.
@@ -218,13 +229,13 @@ Database-backed admin-defined commands. Enables server owners to create custom r
 Core moderation tooling for server safety and audit trails.
 
 - [x] Initial moderation commands: `warn`, `warnings`, `timeout`, and `untimeout`
-- [x] Persist warning records in PostgreSQL
+- [x] Persist warnings, timeouts, timeout removals, kicks, and bans as unified PostgreSQL cases
 - [x] Configurable moderation log channel per guild
-- [x] Case IDs and reason tracking for warnings
-- [x] Warning history lookup command
+- [x] Case IDs and editable reason tracking for every moderation action
+- [x] Warning-only and combined member history, plus individual case lookup
 - [x] Runtime permission checks, moderator/bot role hierarchy checks, and private confirmations
-- [ ] Store timeout, kick, and ban cases in the database
-- [ ] Add kick and ban commands
+- [x] Store timeout, timeout-removal, kick, and ban cases in the database
+- [x] Add kick and ban commands with action-specific permissions
 
 **Depends on**: Phase 1
 
